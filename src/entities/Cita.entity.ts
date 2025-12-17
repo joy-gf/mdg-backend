@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  JoinColumn,
 } from "typeorm";
 import { Paciente } from "./Paciente.entity";
 import { Psicologo } from "./Psicologo.entity";
@@ -14,12 +15,15 @@ export class Cita {
   id!: string;
 
   @ManyToOne(() => Paciente, { nullable: false })
+  @JoinColumn({ name: "pacienteId", referencedColumnName: "id" })
   paciente!: Paciente;
 
   @ManyToOne(() => Psicologo, { nullable: false })
+  @JoinColumn({ name: "psicologoId", referencedColumnName: "id" })
   psicologo!: Psicologo;
 
   @ManyToOne(() => Consultorio, { nullable: true })
+  @JoinColumn({ name: "consultorioId", referencedColumnName: "id" })
   consultorio!: Consultorio | null;
 
   @Column({ type: "timestamp" })
