@@ -10,6 +10,7 @@ import rolesRoutes from "./routes/roles.routes";
 import psicologosRoutes from "./routes/psicologos.routes";
 import historialTratamientoRoutes from "./routes/historialTratamiento.routes";
 import citasRoutes from "./routes/citas.routes";
+import antecedentesPacienteRoutes from "./routes/antecedentesPaciente.routes";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/pacientes", pacientesRoutes);
 app.use("/api/psicologos", psicologosRoutes);
 app.use("/api/tratamientos", historialTratamientoRoutes);
 app.use("/api/citas", citasRoutes);
+app.use("/api/antecedentes", antecedentesPacienteRoutes);
 
 /* =======================
    Health check
