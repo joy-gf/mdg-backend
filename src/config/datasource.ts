@@ -6,6 +6,7 @@ import { AntecedentesPaciente } from "../entities/AntecedentesPaciente.entity";
 import { HistorialTratamiento } from "../entities/HistorialTratamiento.entity";
 import { HistorialSesion } from "../entities/HistorialSesion.entity";
 import { Psicologo } from "../entities/Psicologo.entity";
+import { Cita } from "../entities/Cita.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -25,6 +26,7 @@ export const AppDataSource = new DataSource({
     HistorialTratamiento,
     HistorialSesion,
     Psicologo,
+    Cita,
   ],
   migrations: ["src/migrations/*.ts"],
 });

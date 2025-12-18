@@ -40,31 +40,34 @@ export class CitasService {
     link_cita?: string;
   }) {
 
-    const inicio = data.hora_sesion;
+    const inicio = new Date(`${data.fecha_sesion}T${data.hora_sesion}:00`);
+    console.log(inicio)
     const fin = new Date(
-    inicio.getTime() + data.duracion_minutos * 60000
+      inicio.getTime() + data.duracion_minutos * 60000
     );
 
     await this.validarDisponibilidad(
-    data.consultorioId!,
-    data.psicologoId,
-    inicio,
-    fin
+      data.consultorioId!,
+      data.psicologoId,
+      inicio,
+      fin
     );
+
     const cita = this.repo.create({
       paciente: { id: data.pacienteId } as Paciente,
       psicologo: { id: data.psicologoId } as Psicologo,
       consultorio: data.consultorioId
         ? ({ id: data.consultorioId } as Consultorio)
         : null,
-      fecha_sesion: data.fecha_sesion,
-      hora_sesion: data.hora_sesion,
+      fecha_sesion: inicio,
+      hora_sesion: inicio,
       duracion_minutos: data.duracion_minutos,
       tipo_cita: data.tipo_cita,
       direccion_cita: data.direccion_cita,
       link_cita: data.link_cita,
     });
 
+    console.log(cita)
     return this.repo.save(cita);
   }
 
