@@ -1,6 +1,12 @@
 import { AppDataSource } from "../config/datasource";
 import { ILike } from "typeorm";
 import { Psicologo } from "../entities/Psicologo.entity";
+import { UsuarioInput } from "../types/usuario.types";
+
+interface CreatePsicologoWithUserInput {
+  usuario: UsuarioInput;
+  psicologo: Partial<Psicologo>;
+}
 
 export class PsicologosService {
   private static repo = AppDataSource.getRepository(Psicologo);
@@ -36,5 +42,32 @@ export class PsicologosService {
 
   static update(id: string, data: Partial<Psicologo>) {
     return this.repo.update(id, data);
+  }
+
+  static async createWithUser(data: CreatePsicologoWithUserInput) {
+    return await AppDataSource.transaction(async (manager) => {
+      // Create usuario first using raw SQL
+      const { userName, password, roleId } = data.usuario;
+      const usuarioResult = await manager.query(
+        `INSERT INTO usuarios (user_name, password_hash, role_id)
+         VALUES ($1, $2, $3)
+         RETURNING *`,
+        [userName, password, roleId]
+      );
+      const usuario = usuarioResult[0];
+
+      // Create psicologo with the created usuario_id
+      const psicologoData = {
+        ...data.psicologo,
+        usuario_id: usuario.id,
+      };
+      const psicologo = manager.getRepository(Psicologo).create(psicologoData);
+      const savedPsicologo = await manager.getRepository(Psicologo).save(psicologo);
+
+      return {
+        usuario,
+        psicologo: savedPsicologo,
+      };
+    });
   }
 }

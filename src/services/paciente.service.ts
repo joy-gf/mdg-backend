@@ -1,6 +1,12 @@
 import { ILike } from "typeorm";
 import { Paciente } from "../entities/Paciente.entity";
 import { AppDataSource } from "../config/datasource";
+import { UsuarioInput } from "../types/usuario.types";
+
+interface CreatePacienteWithUserInput {
+  usuario: UsuarioInput;
+  paciente: Partial<Paciente>;
+}
 
 export class PacientesService {
   private static repo = AppDataSource.getRepository(Paciente);
@@ -24,6 +30,10 @@ export class PacientesService {
     });
   }
 
+  static getByUsuario(usuario_id: string) {
+    return this.repo.findOne({ where: { usuario_id } });
+  }
+
   static create(data: Partial<Paciente>) {
     const paciente = this.repo.create(data);
     return this.repo.save(paciente);
@@ -31,5 +41,32 @@ export class PacientesService {
 
   static update(id: string, data: Partial<Paciente>) {
     return this.repo.update(id, data);
+  }
+
+  static async createWithUser(data: CreatePacienteWithUserInput) {
+    return await AppDataSource.transaction(async (manager) => {
+      // Create usuario first using raw SQL
+      const { userName, password, roleId } = data.usuario;
+      const usuarioResult = await manager.query(
+        `INSERT INTO usuarios (user_name, password_hash, role_id)
+         VALUES ($1, $2, $3)
+         RETURNING *`,
+        [userName, password, roleId]
+      );
+      const usuario = usuarioResult[0];
+
+      // Create paciente with the created usuario_id
+      const pacienteData = {
+        ...data.paciente,
+        usuario_id: usuario.id,
+      };
+      const paciente = manager.getRepository(Paciente).create(pacienteData);
+      const savedPaciente = await manager.getRepository(Paciente).save(paciente);
+
+      return {
+        usuario,
+        paciente: savedPaciente,
+      };
+    });
   }
 }

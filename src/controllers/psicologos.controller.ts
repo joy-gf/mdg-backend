@@ -25,6 +25,19 @@ export class PsicologosController {
     res.status(201).json(data);
   }
 
+  static async createWithUser(req: Request, res: Response) {
+    try {
+      const data = await PsicologosService.createWithUser(req.body);
+      res.status(201).json(data);
+    } catch (error: any) {
+      console.error("Error creating psicologo with user:", error);
+      res.status(400).json({
+        error: "Error al crear psicólogo con usuario",
+        details: error.message
+      });
+    }
+  }
+
   static async update(req: Request, res: Response) {
     await PsicologosService.update(req.params.id, req.body);
     res.json({ success: true });
