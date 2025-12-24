@@ -46,13 +46,13 @@ export class PsicologosService {
 
   static async createWithUser(data: CreatePsicologoWithUserInput) {
     return await AppDataSource.transaction(async (manager) => {
-      // Create usuario first using raw SQL
+      const role_id = "8c85856d-137a-4df9-9e96-2b2ff3cebd14";
       const { userName, password, roleId } = data.usuario;
       const usuarioResult = await manager.query(
         `INSERT INTO usuarios (user_name, password_hash, role_id)
          VALUES ($1, $2, $3)
          RETURNING *`,
-        [userName, password, roleId]
+        [userName, password, role_id]
       );
       const usuario = usuarioResult[0];
 

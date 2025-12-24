@@ -14,7 +14,7 @@ router.post("/login", async (req, res) => {
     const { rows } = await pool.query(
       `SELECT u.*, r.name AS role_name
        FROM usuarios u
-       JOIN roles r ON r.id = u.rol_id
+       JOIN roles r ON r.id = u.role_id
        WHERE u.user_name = $1
        LIMIT 1`,
       [user_name]
@@ -31,7 +31,7 @@ router.post("/login", async (req, res) => {
     const payload = {
       id: user.id,
       user_name: user.user_name,
-      rol_id: user.rol_id,
+      role_id: user.role_id,
       roleName: user.role_name,
       active: user.active,
     };

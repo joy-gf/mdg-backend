@@ -45,13 +45,13 @@ export class PacientesService {
 
   static async createWithUser(data: CreatePacienteWithUserInput) {
     return await AppDataSource.transaction(async (manager) => {
-      // Create usuario first using raw SQL
+      const role_id = "222b5b78-a1b4-41d7-8ed0-f904afb3f078";
       const { userName, password, roleId } = data.usuario;
       const usuarioResult = await manager.query(
         `INSERT INTO usuarios (user_name, password_hash, role_id)
          VALUES ($1, $2, $3)
          RETURNING *`,
-        [userName, password, roleId]
+        [userName, password, role_id]
       );
       const usuario = usuarioResult[0];
 
