@@ -1,5 +1,6 @@
 import { pool } from "../config/db";
 import { Usuario, UsuarioInput } from "../types/usuario.types";
+import * as bcrypt from "bcrypt";
 
 export class UsuarioModel {
   static async getAll(): Promise<Usuario[]> {
@@ -19,11 +20,15 @@ export class UsuarioModel {
   static async create(data: UsuarioInput): Promise<Usuario> {
     const { userName, password, roleId } = data;
 
+    // Hash the password before storing
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
     const res = await pool.query(
       `INSERT INTO usuarios (user_name, password_hash, role_id)
        VALUES ($1, $2, $3)
        RETURNING *`,
-      [userName, password, roleId]
+      [userName, passwordHash, roleId]
     );
     return res.rows[0];
   }
@@ -31,12 +36,16 @@ export class UsuarioModel {
   static async update(id: string, data: UsuarioInput): Promise<Usuario> {
     const { userName, password } = data;
 
+    // Hash the password before storing
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(password, saltRounds);
+
     const res = await pool.query(
       `UPDATE usuarios
        SET user_name = $1, password_hash = $2
        WHERE id = $3
        RETURNING *`,
-      [userName, password, id]
+      [userName, passwordHash, id]
     );
     return res.rows[0];
   }
