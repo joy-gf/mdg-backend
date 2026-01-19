@@ -35,7 +35,42 @@ export class PsicologosService {
     return this.repo.findOne({ where: { usuario_id } });
   }
 
-  static create(data: Partial<Psicologo>) {
+  static async validateCIUnique(ci: string, excludeId?: string): Promise<void> {
+    const query: any = { ci };
+    const existing = await this.repo.findOne({ where: query });
+
+    if (existing && (!excludeId || existing.id !== excludeId)) {
+      throw {
+        status: 409,
+        code: "CI_DUPLICADO",
+        message: `Ya existe un psicólogo registrado con el CI ${ci}`,
+        ci: ci,
+      };
+    }
+  }
+
+  static async create(data: Partial<Psicologo>) {
+    // Validar CI requerido
+    if (!data.ci || data.ci.trim() === "") {
+      throw {
+        status: 400,
+        code: "CI_REQUERIDO",
+        message: "El CI (Cédula de Identidad) es requerido",
+      };
+    }
+
+    // Validar matrícula profesional requerida
+    if (!data.matricula_profesional || data.matricula_profesional.trim() === "") {
+      throw {
+        status: 400,
+        code: "MATRICULA_REQUERIDA",
+        message: "La matrícula profesional es requerida",
+      };
+    }
+
+    // Validar CI único
+    await this.validateCIUnique(data.ci);
+
     const psico = this.repo.create(data);
     return this.repo.save(psico);
   }
@@ -45,9 +80,46 @@ export class PsicologosService {
   }
 
   static async createWithUser(data: CreatePsicologoWithUserInput) {
+    // Validar CI requerido antes de iniciar transacción
+    if (!data.psicologo.ci || data.psicologo.ci.trim() === "") {
+      throw {
+        status: 400,
+        code: "CI_REQUERIDO",
+        message: "El CI (Cédula de Identidad) es requerido",
+      };
+    }
+
+    // Validar matrícula profesional requerida
+    if (!data.psicologo.matricula_profesional || data.psicologo.matricula_profesional.trim() === "") {
+      throw {
+        status: 400,
+        code: "MATRICULA_REQUERIDA",
+        message: "La matrícula profesional es requerida",
+      };
+    }
+
+    // Validar CI único antes de iniciar transacción
+    await this.validateCIUnique(data.psicologo.ci);
+
     return await AppDataSource.transaction(async (manager) => {
       const role_id = "8c85856d-137a-4df9-9e96-2b2ff3cebd14";
       const { userName, password, roleId } = data.usuario;
+
+      // Verificar que el username no existe
+      const existingUser = await manager.query(
+        `SELECT id FROM usuarios WHERE user_name = $1`,
+        [userName]
+      );
+
+      if (existingUser.length > 0) {
+        throw {
+          status: 409,
+          code: "USERNAME_DUPLICADO",
+          message: `El nombre de usuario ${userName} ya existe`,
+          userName: userName,
+        };
+      }
+
       const usuarioResult = await manager.query(
         `INSERT INTO usuarios (user_name, password_hash, role_id)
          VALUES ($1, $2, $3)

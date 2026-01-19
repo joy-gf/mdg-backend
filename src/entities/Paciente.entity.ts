@@ -22,6 +22,9 @@ export class Paciente {
   @Column({ length: 120 })
   apellidos!: string;
 
+  @Column({ length: 20, unique: true })
+  ci!: string;
+
   @Column({ type: "date" })
   fecha_nacimiento!: Date;
 

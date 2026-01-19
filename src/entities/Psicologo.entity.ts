@@ -42,13 +42,13 @@ export class Psicologo {
   @Column({ length: 30, nullable: true })
   genero!: string;
 
-  @Column({ length: 30, nullable: true })
+  @Column({ length: 30, unique: true })
   ci!: string;
 
   @Column({ length: 150, nullable: true })
   profesion!: string;
 
-  @Column({ length: 100, nullable: true })
+  @Column({ length: 100 })
   matricula_profesional!: string;
 
   @Column({ length: 150, nullable: true })

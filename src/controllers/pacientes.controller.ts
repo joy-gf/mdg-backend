@@ -21,8 +21,35 @@ export class PacientesController {
   }
 
   static async create(req: Request, res: Response) {
-    const data = await PacientesService.create(req.body);
-    res.status(201).json(data);
+    try {
+      const data = await PacientesService.create(req.body);
+      res.status(201).json(data);
+    } catch (error: any) {
+      console.error("Error creating paciente:", error);
+
+      // Handle CI duplicate error
+      if (error.status === 409 && error.code === "CI_DUPLICADO") {
+        return res.status(409).json({
+          error: error.code,
+          message: error.message,
+          ci: error.ci,
+        });
+      }
+
+      // Handle missing CI error
+      if (error.status === 400 && error.code === "CI_REQUERIDO") {
+        return res.status(400).json({
+          error: error.code,
+          message: error.message,
+        });
+      }
+
+      // Generic error
+      res.status(500).json({
+        error: "Error al crear paciente",
+        details: error.message,
+      });
+    }
   }
 
   static async createWithUser(req: Request, res: Response) {
@@ -31,9 +58,37 @@ export class PacientesController {
       res.status(201).json(data);
     } catch (error: any) {
       console.error("Error creating paciente with user:", error);
-      res.status(400).json({
+
+      // Handle CI duplicate error
+      if (error.status === 409 && error.code === "CI_DUPLICADO") {
+        return res.status(409).json({
+          error: error.code,
+          message: error.message,
+          ci: error.ci,
+        });
+      }
+
+      // Handle username duplicate error
+      if (error.status === 409 && error.code === "USERNAME_DUPLICADO") {
+        return res.status(409).json({
+          error: error.code,
+          message: error.message,
+          userName: error.userName,
+        });
+      }
+
+      // Handle missing CI error
+      if (error.status === 400 && error.code === "CI_REQUERIDO") {
+        return res.status(400).json({
+          error: error.code,
+          message: error.message,
+        });
+      }
+
+      // Generic error
+      res.status(500).json({
         error: "Error al crear paciente con usuario",
-        details: error.message
+        details: error.message,
       });
     }
   }
