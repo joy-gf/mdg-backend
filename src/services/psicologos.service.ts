@@ -2,6 +2,7 @@ import { AppDataSource } from "../config/datasource";
 import { ILike } from "typeorm";
 import { Psicologo } from "../entities/Psicologo.entity";
 import { UsuarioInput } from "../types/usuario.types";
+import * as bcrypt from "bcrypt";
 
 interface CreatePsicologoWithUserInput {
   usuario: UsuarioInput;
@@ -79,6 +80,68 @@ export class PsicologosService {
     return this.repo.update(id, data);
   }
 
+  static async addUserToPsicologo(psicologoId: string, userData: UsuarioInput) {
+    return await AppDataSource.transaction(async (manager) => {
+      const role_id = "8c85856d-137a-4df9-9e96-2b2ff3cebd14"; // PSICOLOGO role
+      const { userName, password } = userData;
+
+      // Verificar que el psicólogo existe
+      const psicologo = await manager.getRepository(Psicologo).findOne({ where: { id: psicologoId } });
+      if (!psicologo) {
+        throw {
+          status: 404,
+          code: "PSICOLOGO_NO_ENCONTRADO",
+          message: "El psicólogo no existe",
+        };
+      }
+
+      // Verificar que el psicólogo no tenga ya un usuario
+      if (psicologo.usuario_id) {
+        throw {
+          status: 409,
+          code: "PSICOLOGO_YA_TIENE_USUARIO",
+          message: "El psicólogo ya tiene un usuario asociado",
+        };
+      }
+
+      // Verificar que el username no existe
+      const existingUser = await manager.query(
+        `SELECT id FROM usuarios WHERE user_name = $1`,
+        [userName]
+      );
+
+      if (existingUser.length > 0) {
+        throw {
+          status: 409,
+          code: "USERNAME_DUPLICADO",
+          message: `El nombre de usuario ${userName} ya existe`,
+          userName: userName,
+        };
+      }
+
+      // Hash the password before storing
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+
+      // Crear el usuario
+      const usuarioResult = await manager.query(
+        `INSERT INTO usuarios (user_name, password_hash, role_id)
+         VALUES ($1, $2, $3)
+         RETURNING *`,
+        [userName, passwordHash, role_id]
+      );
+      const usuario = usuarioResult[0];
+
+      // Actualizar el psicólogo con el usuario_id
+      await manager.getRepository(Psicologo).update(psicologoId, { usuario_id: usuario.id });
+
+      return {
+        usuario,
+        psicologo: { ...psicologo, usuario_id: usuario.id },
+      };
+    });
+  }
+
   static async createWithUser(data: CreatePsicologoWithUserInput) {
     // Validar CI requerido antes de iniciar transacción
     if (!data.psicologo.ci || data.psicologo.ci.trim() === "") {
@@ -120,11 +183,15 @@ export class PsicologosService {
         };
       }
 
+      // Hash the password before storing
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+
       const usuarioResult = await manager.query(
         `INSERT INTO usuarios (user_name, password_hash, role_id)
          VALUES ($1, $2, $3)
          RETURNING *`,
-        [userName, password, role_id]
+        [userName, passwordHash, role_id]
       );
       const usuario = usuarioResult[0];
 

@@ -8,6 +8,7 @@ router.post("/with-user", PacientesController.createWithUser);
 router.get("/usuario/:usuarioId", PacientesController.getByUsuario);
 router.get("/:id", PacientesController.getById);
 router.post("/", PacientesController.create);
+router.post("/:id/add-user", PacientesController.addUserToPaciente);
 router.put("/:id", PacientesController.update);
 
 export default router;

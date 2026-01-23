@@ -97,4 +97,44 @@ export class PacientesController {
     await PacientesService.update(req.params.id, req.body);
     res.json({ success: true });
   }
+
+  static async addUserToPaciente(req: Request, res: Response) {
+    try {
+      const data = await PacientesService.addUserToPaciente(req.params.id, req.body);
+      res.status(201).json(data);
+    } catch (error: any) {
+      console.error("Error adding user to paciente:", error);
+
+      // Handle paciente not found
+      if (error.status === 404 && error.code === "PACIENTE_NO_ENCONTRADO") {
+        return res.status(404).json({
+          error: error.code,
+          message: error.message,
+        });
+      }
+
+      // Handle paciente already has user
+      if (error.status === 409 && error.code === "PACIENTE_YA_TIENE_USUARIO") {
+        return res.status(409).json({
+          error: error.code,
+          message: error.message,
+        });
+      }
+
+      // Handle username duplicate error
+      if (error.status === 409 && error.code === "USERNAME_DUPLICADO") {
+        return res.status(409).json({
+          error: error.code,
+          message: error.message,
+          userName: error.userName,
+        });
+      }
+
+      // Generic error
+      res.status(500).json({
+        error: "Error al agregar usuario al paciente",
+        details: error.message,
+      });
+    }
+  }
 }

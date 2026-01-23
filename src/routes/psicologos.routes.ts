@@ -8,6 +8,7 @@ router.post("/with-user", PsicologosController.createWithUser);
 router.get("/usuario/:usuarioId", PsicologosController.getByUsuario);
 router.get("/:id", PsicologosController.getById);
 router.post("/", PsicologosController.create);
+router.post("/:id/add-user", PsicologosController.addUserToPsicologo);
 router.put("/:id", PsicologosController.update);
 
 export default router;

@@ -2,6 +2,7 @@ import { ILike } from "typeorm";
 import { Paciente } from "../entities/Paciente.entity";
 import { AppDataSource } from "../config/datasource";
 import { UsuarioInput } from "../types/usuario.types";
+import * as bcrypt from "bcrypt";
 
 interface CreatePacienteWithUserInput {
   usuario: UsuarioInput;
@@ -69,6 +70,68 @@ export class PacientesService {
     return this.repo.update(id, data);
   }
 
+  static async addUserToPaciente(pacienteId: string, userData: UsuarioInput) {
+    return await AppDataSource.transaction(async (manager) => {
+      const role_id = "222b5b78-a1b4-41d7-8ed0-f904afb3f078"; // PACIENTE role
+      const { userName, password } = userData;
+
+      // Verificar que el paciente existe
+      const paciente = await manager.getRepository(Paciente).findOne({ where: { id: pacienteId } });
+      if (!paciente) {
+        throw {
+          status: 404,
+          code: "PACIENTE_NO_ENCONTRADO",
+          message: "El paciente no existe",
+        };
+      }
+
+      // Verificar que el paciente no tenga ya un usuario
+      if (paciente.usuario_id) {
+        throw {
+          status: 409,
+          code: "PACIENTE_YA_TIENE_USUARIO",
+          message: "El paciente ya tiene un usuario asociado",
+        };
+      }
+
+      // Verificar que el username no existe
+      const existingUser = await manager.query(
+        `SELECT id FROM usuarios WHERE user_name = $1`,
+        [userName]
+      );
+
+      if (existingUser.length > 0) {
+        throw {
+          status: 409,
+          code: "USERNAME_DUPLICADO",
+          message: `El nombre de usuario ${userName} ya existe`,
+          userName: userName,
+        };
+      }
+
+      // Hash the password before storing
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+
+      // Crear el usuario
+      const usuarioResult = await manager.query(
+        `INSERT INTO usuarios (user_name, password_hash, role_id)
+         VALUES ($1, $2, $3)
+         RETURNING *`,
+        [userName, passwordHash, role_id]
+      );
+      const usuario = usuarioResult[0];
+
+      // Actualizar el paciente con el usuario_id
+      await manager.getRepository(Paciente).update(pacienteId, { usuario_id: usuario.id });
+
+      return {
+        usuario,
+        paciente: { ...paciente, usuario_id: usuario.id },
+      };
+    });
+  }
+
   static async createWithUser(data: CreatePacienteWithUserInput) {
     // Validar CI requerido antes de iniciar transacción
     if (!data.paciente.ci || data.paciente.ci.trim() === "") {
@@ -101,11 +164,15 @@ export class PacientesService {
         };
       }
 
+      // Hash the password before storing
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+
       const usuarioResult = await manager.query(
         `INSERT INTO usuarios (user_name, password_hash, role_id)
          VALUES ($1, $2, $3)
          RETURNING *`,
-        [userName, password, role_id]
+        [userName, passwordHash, role_id]
       );
       const usuario = usuarioResult[0];
 
