@@ -11,6 +11,7 @@ import psicologosRoutes from "./routes/psicologos.routes";
 import historialTratamientoRoutes from "./routes/historialTratamiento.routes";
 import citasRoutes from "./routes/citas.routes";
 import antecedentesPacienteRoutes from "./routes/antecedentesPaciente.routes";
+import diarioEmocionalRoutes from "./routes/diarioEmocional.routes";
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use("/api/psicologos", psicologosRoutes);
 app.use("/api/tratamientos", historialTratamientoRoutes);
 app.use("/api/citas", citasRoutes);
 app.use("/api/antecedentes", antecedentesPacienteRoutes);
+app.use("/api/diario-emocional", diarioEmocionalRoutes);
 
 /* =======================
    Health check
