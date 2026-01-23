@@ -16,12 +16,12 @@ export class PacientesService {
     if (search) {
       return this.repo.find({
         where: [
-          { nombres: ILike(`%${search}%`) },
-          { apellidos: ILike(`%${search}%`) },
+          { nombres: ILike(`%${search}%`), activo: true },
+          { apellidos: ILike(`%${search}%`), activo: true },
         ],
       });
     }
-    return this.repo.find();
+    return this.repo.find({ where: { activo: true } });
   }
 
   static getById(id: string) {
@@ -68,6 +68,34 @@ export class PacientesService {
 
   static update(id: string, data: Partial<Paciente>) {
     return this.repo.update(id, data);
+  }
+
+  static async darDeBaja(id: string) {
+    const paciente = await this.repo.findOne({ where: { id } });
+    if (!paciente) {
+      throw {
+        status: 404,
+        code: "PACIENTE_NO_ENCONTRADO",
+        message: "El paciente no existe",
+      };
+    }
+
+    await this.repo.update(id, { activo: false });
+    return { success: true, message: "Paciente dado de baja exitosamente" };
+  }
+
+  static async reactivar(id: string) {
+    const paciente = await this.repo.findOne({ where: { id } });
+    if (!paciente) {
+      throw {
+        status: 404,
+        code: "PACIENTE_NO_ENCONTRADO",
+        message: "El paciente no existe",
+      };
+    }
+
+    await this.repo.update(id, { activo: true });
+    return { success: true, message: "Paciente reactivado exitosamente" };
   }
 
   static async addUserToPaciente(pacienteId: string, userData: UsuarioInput) {

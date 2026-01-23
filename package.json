@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "migration:run": "ts-node ./node_modules/typeorm/cli.js migration:run -d src/config/datasource.ts",
+    "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert -d src/config/datasource.ts"
   },
   "keywords": [],
   "author": "",

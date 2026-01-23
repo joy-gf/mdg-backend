@@ -52,6 +52,9 @@ export class Paciente {
   @CreateDateColumn({ type: "date" })
   fecha_ingreso!: Date;
 
+  @Column({ type: "boolean", default: true })
+  activo!: boolean;
+
   /* RELACIONES */
   @OneToMany(() => AntecedentesPaciente, (a) => a.paciente)
   antecedentes!: AntecedentesPaciente[];

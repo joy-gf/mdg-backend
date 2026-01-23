@@ -66,6 +66,9 @@ export class Psicologo {
   @CreateDateColumn({ type: "timestamp" })
   fecha_creacion!: Date;
 
+  @Column({ type: "boolean", default: true })
+  activo!: boolean;
+
   @OneToMany(
     () => HistorialTratamiento,
     (t) => t.psicologo

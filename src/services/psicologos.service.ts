@@ -16,13 +16,13 @@ export class PsicologosService {
     if (search) {
       return this.repo.find({
         where: [
-          { nombres: ILike(`%${search}%`) },
-          { apellidos: ILike(`%${search}%`) },
-          { especialidades: ILike(`%${search}%`) },
+          { nombres: ILike(`%${search}%`), activo: true },
+          { apellidos: ILike(`%${search}%`), activo: true },
+          { especialidades: ILike(`%${search}%`), activo: true },
         ],
       });
     }
-    return this.repo.find();
+    return this.repo.find({ where: { activo: true } });
   }
 
   static getById(id: string) {
@@ -78,6 +78,34 @@ export class PsicologosService {
 
   static update(id: string, data: Partial<Psicologo>) {
     return this.repo.update(id, data);
+  }
+
+  static async darDeBaja(id: string) {
+    const psicologo = await this.repo.findOne({ where: { id } });
+    if (!psicologo) {
+      throw {
+        status: 404,
+        code: "PSICOLOGO_NO_ENCONTRADO",
+        message: "El psicólogo no existe",
+      };
+    }
+
+    await this.repo.update(id, { activo: false });
+    return { success: true, message: "Psicólogo dado de baja exitosamente" };
+  }
+
+  static async reactivar(id: string) {
+    const psicologo = await this.repo.findOne({ where: { id } });
+    if (!psicologo) {
+      throw {
+        status: 404,
+        code: "PSICOLOGO_NO_ENCONTRADO",
+        message: "El psicólogo no existe",
+      };
+    }
+
+    await this.repo.update(id, { activo: true });
+    return { success: true, message: "Psicólogo reactivado exitosamente" };
   }
 
   static async addUserToPsicologo(psicologoId: string, userData: UsuarioInput) {

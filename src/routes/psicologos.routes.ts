@@ -10,5 +10,7 @@ router.get("/:id", PsicologosController.getById);
 router.post("/", PsicologosController.create);
 router.post("/:id/add-user", PsicologosController.addUserToPsicologo);
 router.put("/:id", PsicologosController.update);
+router.put("/:id/dar-de-baja", PsicologosController.darDeBaja);
+router.put("/:id/reactivar", PsicologosController.reactivar);
 
 export default router;

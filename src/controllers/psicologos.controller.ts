@@ -153,4 +153,46 @@ export class PsicologosController {
       });
     }
   }
+
+  static async darDeBaja(req: Request, res: Response) {
+    try {
+      const data = await PsicologosService.darDeBaja(req.params.id);
+      res.json(data);
+    } catch (error: any) {
+      console.error("Error dando de baja psicólogo:", error);
+
+      if (error.status === 404 && error.code === "PSICOLOGO_NO_ENCONTRADO") {
+        return res.status(404).json({
+          error: error.code,
+          message: error.message,
+        });
+      }
+
+      res.status(500).json({
+        error: "Error al dar de baja el psicólogo",
+        details: error.message,
+      });
+    }
+  }
+
+  static async reactivar(req: Request, res: Response) {
+    try {
+      const data = await PsicologosService.reactivar(req.params.id);
+      res.json(data);
+    } catch (error: any) {
+      console.error("Error reactivando psicólogo:", error);
+
+      if (error.status === 404 && error.code === "PSICOLOGO_NO_ENCONTRADO") {
+        return res.status(404).json({
+          error: error.code,
+          message: error.message,
+        });
+      }
+
+      res.status(500).json({
+        error: "Error al reactivar el psicólogo",
+        details: error.message,
+      });
+    }
+  }
 }
