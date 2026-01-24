@@ -15,9 +15,9 @@ const router = Router();
  * - GET    /paciente/:id  Get all entries for patient
  * - GET    /paciente/:id/count  Get entry count
  * - GET    /:id           Get single entry by ID
+ * - PUT    /:id           Update entry (only same-day updates allowed)
  *
  * NOT available (by design):
- * - PUT    Update entry (clinical data must be immutable)
  * - DELETE Delete entry (clinical data must be preserved)
  */
 
@@ -32,5 +32,8 @@ router.get("/paciente/:pacienteId/count", DiarioEmocionalController.getCount);
 
 // Get single entry by ID (requires paciente_id query param for security)
 router.get("/:id", DiarioEmocionalController.getById);
+
+// Update entry (only same-day updates allowed for clinical data integrity)
+router.put("/:id", DiarioEmocionalController.update);
 
 export default router;

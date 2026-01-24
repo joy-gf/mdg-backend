@@ -120,6 +120,45 @@ export class DiarioEmocionalController {
     }
   }
 
+  static async update(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { paciente_id, ...updateData } = req.body;
+
+      if (!paciente_id) {
+        return res.status(400).json({
+          error: "PACIENTE_ID_REQUERIDO",
+          message: "Se requiere el ID del paciente para validación de seguridad",
+        });
+      }
+
+      const entry = await DiarioEmocionalService.update(id, paciente_id, updateData);
+
+      res.json(entry);
+    } catch (error: any) {
+      console.error("Error updating diary entry:", error);
+
+      if (error.status === 404) {
+        return res.status(404).json({
+          error: error.code,
+          message: error.message,
+        });
+      }
+
+      if (error.status === 403) {
+        return res.status(403).json({
+          error: error.code,
+          message: error.message,
+        });
+      }
+
+      res.status(500).json({
+        error: "Error al actualizar entrada de diario",
+        details: error.message,
+      });
+    }
+  }
+
   /**
    * Get entry count for a patient
    * GET /api/diario-emocional/paciente/:pacienteId/count

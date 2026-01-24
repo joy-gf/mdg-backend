@@ -48,13 +48,13 @@ export class HistorialTratamientoService {
     return repo.save(tratamiento);
   }
 
-  static async cerrar(id: string, comentarios_finales?: string) {
+  static async cerrar(id: string, comentarios_finales_encrypted?: string) {
     const tratamiento = await repo.findOneBy({ id });
     if (!tratamiento) throw new Error("Tratamiento no encontrado");
 
     tratamiento.activo = false;
     tratamiento.fecha_cierre = new Date();
-    tratamiento.comentarios_finales = comentarios_finales ?? null;
+    tratamiento.comentarios_finales_encrypted = comentarios_finales_encrypted ?? null;
 
     return repo.save(tratamiento);
   }

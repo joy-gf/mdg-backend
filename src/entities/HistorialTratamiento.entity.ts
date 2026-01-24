@@ -9,6 +9,7 @@ import { Paciente } from "./Paciente.entity";
 import { Psicologo } from "./Psicologo.entity";
 import { HistorialSesion } from "./HistorialSesion.entity";
 
+
 @Entity("historial_tratamiento")
 export class HistorialTratamiento {
   @PrimaryGeneratedColumn("uuid")
@@ -31,45 +32,45 @@ export class HistorialTratamiento {
   )
   sesiones!: HistorialSesion[];
 
-  /* DATOS CLÍNICOS */
+  /* DATOS CLÍNICOS CIFRADOS */
   @Column({ type: "text", nullable: true })
-  antecedentes_terapeuticos_previos!: string;
+  antecedentes_terapeuticos_previos_encrypted!: string | null;
 
   @Column({ type: "boolean", nullable: true })
-  consumo_sustancias!: boolean;
+  consumo_sustancias!: boolean | null;
 
   @Column({ type: "text", nullable: true })
-  consumo_detalle!: string;
+  consumo_detalle_encrypted!: string | null;
 
   @Column({ type: "text", nullable: true })
-  observaciones_clinicas!: string;
+  observaciones_clinicas_encrypted!: string | null;
 
   @Column({ type: "text", nullable: true })
-  hipotesis_diagnostica!: string;
+  hipotesis_diagnostica_encrypted!: string | null;
 
   @Column({ type: "text", nullable: true })
-  diagnostico_clinico!: string;
+  diagnostico_clinico_encrypted!: string | null;
 
   @Column({ length: 80, nullable: true })
-  tipo_intervencion!: string;
+  tipo_intervencion!: string | null;
 
   @Column({ type: "text", nullable: true })
-  objetivo_general!: string;
+  objetivo_general_encrypted!: string | null;
 
   @Column({ type: "text", nullable: true })
-  objetivos_especificos!: string;
+  objetivos_especificos_encrypted!: string | null;
 
   @Column({ type: "text", nullable: true })
-  plan_trabajo!: string;
+  plan_trabajo_encrypted!: string | null;
 
   @Column({ type: "int", nullable: true })
-  numero_sesiones_tentativas!: number;
+  numero_sesiones_tentativas!: number | null;
 
   @Column({ type: "text", nullable: true })
-  recomendaciones_iniciales!: string;
+  recomendaciones_iniciales_encrypted!: string | null;
 
   @Column({ type: "text", nullable: true })
-  tareas_terapeuticas!: string;
+  tareas_terapeuticas_encrypted!: string | null;
 
   /* ESTADO DEL TRATAMIENTO */
   @Column({ type: "date", default: () => "CURRENT_DATE" })
@@ -79,7 +80,7 @@ export class HistorialTratamiento {
   fecha_cierre!: Date | null;
 
   @Column({ type: "text", nullable: true })
-  comentarios_finales!: string | null;
+  comentarios_finales_encrypted!: string | null;
 
   @Column({ default: true })
   activo!: boolean;

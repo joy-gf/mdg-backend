@@ -127,6 +127,53 @@ export class DiarioEmocionalService {
   }
 
   /**
+   * Actualizar data existente solo para la entrada del día actual
+   *
+   *
+   * @param id - Entry ID
+   * @param paciente_id - Patient ID (for validation)
+   * @param data - Updated data
+   * @returns Updated entry
+   */
+  static async update(
+    id: string,
+    paciente_id: string,
+    data: Partial<CreateDiarioInput>
+  ) {
+    const entry = await this.repo.findOne({
+      where: { id, paciente_id },
+    });
+
+    if (!entry) {
+      throw {
+        status: 404,
+        code: "ENTRADA_NO_ENCONTRADA",
+        message: "Entrada no encontrada o no pertenece al paciente",
+      };
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    const entryDate = new Date(entry.fecha_entrada).toISOString().split("T")[0];
+
+    if (entryDate !== today) {
+      throw {
+        status: 403,
+        code: "ENTRADA_NO_ACTUALIZABLE",
+        message: "Solo se pueden actualizar entradas del día actual",
+      };
+    }
+
+    if (data.emocion_seleccionada !== undefined) {
+      entry.emocion_seleccionada = data.emocion_seleccionada;
+    }
+    if (data.texto_entrada_encrypted !== undefined) {
+      entry.texto_entrada_encrypted = data.texto_entrada_encrypted;
+    }
+
+    return this.repo.save(entry);
+  }
+
+  /**
    * Get entry count for a patient
    *
    * @param paciente_id - Patient ID

@@ -4,42 +4,94 @@ import { HistorialTratamientoService } from "../services/historialTratamiento.se
 export class HistorialTratamientoController {
 
   static async listByPaciente(req: Request, res: Response) {
-    const { pacienteId } = req.params;
-    const data =
-      await HistorialTratamientoService.getByPaciente(pacienteId);
-    res.json(data);
+    try {
+      const { pacienteId } = req.params;
+      const data = await HistorialTratamientoService.getByPaciente(pacienteId);
+      res.json(data);
+    } catch (error: any) {
+      console.error("Error fetching tratamientos:", error);
+      res.status(500).json({
+        error: "Error al obtener tratamientos",
+        details: error.message,
+      });
+    }
   }
 
   static async getOne(req: Request, res: Response) {
-    const { id } = req.params;
-    const data = await HistorialTratamientoService.getById(id);
-    res.json(data);
+    try {
+      const { id } = req.params;
+      const data = await HistorialTratamientoService.getById(id);
+
+      if (!data) {
+        return res.status(404).json({
+          error: "TRATAMIENTO_NO_ENCONTRADO",
+          message: "No se encontró el tratamiento especificado",
+        });
+      }
+
+      res.json(data);
+    } catch (error: any) {
+      console.error("Error fetching tratamiento:", error);
+      res.status(500).json({
+        error: "Error al obtener tratamiento",
+        details: error.message,
+      });
+    }
   }
 
   static async create(req: Request, res: Response) {
-    const { pacienteId } = req.params;
-    const { psicologoId, ...body } = req.body;
+    try {
+      const { pacienteId } = req.params;
+      const { psicologoId, ...body } = req.body;
 
-    const tratamiento =
-      await HistorialTratamientoService.create(
+      const tratamiento = await HistorialTratamientoService.create(
         pacienteId,
         psicologoId,
         body
       );
 
-    res.status(201).json(tratamiento);
+      res.status(201).json(tratamiento);
+    } catch (error: any) {
+      console.error("Error creating tratamiento:", error);
+
+      if (error.message === "Paciente no encontrado" || error.message === "Psicólogo no encontrado") {
+        return res.status(404).json({
+          error: "ENTIDAD_NO_ENCONTRADA",
+          message: error.message,
+        });
+      }
+
+      res.status(500).json({
+        error: "Error al crear tratamiento",
+        details: error.message,
+      });
+    }
   }
 
   static async cerrar(req: Request, res: Response) {
-    const { id } = req.params;
-    const { comentarios_finales } = req.body;
+    try {
+      const { id } = req.params;
+      const { comentarios_finales_encrypted } = req.body;
 
-    const data =
-      await HistorialTratamientoService.cerrar(
+      const data = await HistorialTratamientoService.cerrar(
         id,
-        comentarios_finales
+        comentarios_finales_encrypted
       );
 
-    res.json(data);
+      if (!data) {
+        return res.status(404).json({
+          error: "TRATAMIENTO_NO_ENCONTRADO",
+          message: "No se encontró el tratamiento especificado",
+        });
+      }
+
+      res.json(data);
+    } catch (error: any) {
+      console.error("Error closing tratamiento:", error);
+      res.status(500).json({
+        error: "Error al cerrar tratamiento",
+        details: error.message,
+      });
+    }
   }
 }

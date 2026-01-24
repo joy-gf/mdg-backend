@@ -12,3 +12,10 @@ router.post(
   "/tratamientos/:tratamientoId/sesiones",
   HistorialSesionController.create
 );
+
+router.put(
+  "/tratamientos/:tratamientoId/sesiones/:sesionId",
+  HistorialSesionController.update
+);
+
+export default router;

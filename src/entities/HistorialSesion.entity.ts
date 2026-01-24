@@ -24,14 +24,14 @@ export class HistorialSesion {
   fecha_sesion!: Date;
 
   @Column({ type: "text", nullable: true })
-  seguimiento!: string;
+  seguimiento_encrypted!: string | null;
 
   @Column({ type: "text", nullable: true })
-  recomendaciones!: string;
+  recomendaciones_encrypted!: string | null;
 
   @Column({ type: "date", nullable: true })
-  fecha_proxima_sesion!: Date;
+  fecha_proxima_sesion!: Date | null;
 
   @Column({ type: "text", nullable: true })
-  objetivos_proxima_sesion!: string;
+  objetivos_proxima_sesion_encrypted!: string | null;
 }

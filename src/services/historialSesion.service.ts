@@ -36,4 +36,24 @@ export class HistorialSesionService {
 
     return repo.save(sesion);
   }
+
+  static async update(
+    sesionId: string,
+    tratamientoId: string,
+    data: Partial<HistorialSesion>
+  ) {
+    const sesion = await repo.findOne({
+      where: {
+        id: sesionId,
+        tratamiento: { id: tratamientoId },
+      },
+    });
+
+    if (!sesion) {
+      throw new Error("Sesión no encontrada");
+    }
+
+    Object.assign(sesion, data);
+    return repo.save(sesion);
+  }
 }
