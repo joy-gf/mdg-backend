@@ -67,7 +67,7 @@ export class AntecedentesPacienteService {
 
   static async getByPacienteId(pacienteId: string) {
     const antecedente = await this.repo.findOne({
-      where: { paciente: { id: pacienteId } },
+      where: { paciente_id: pacienteId },
       relations: ["paciente"],
     });
     return antecedente ? decryptAntecedentesFields(antecedente) : null;
@@ -91,6 +91,7 @@ export class AntecedentesPacienteService {
 
     const antecedente = this.repo.create({
       ...encryptedData,
+      paciente_id: pacienteId,
       paciente,
     });
 
