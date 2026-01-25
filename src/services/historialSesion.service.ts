@@ -10,6 +10,7 @@ export class HistorialSesionService {
       where: {
         tratamiento: { id: tratamientoId },
       },
+      relations: ["tratamiento"],
       order: { fecha_sesion: "ASC" },
     });
   }
@@ -34,7 +35,11 @@ export class HistorialSesionService {
       tratamiento,
     });
 
-    return repo.save(sesion);
+    const saved = await repo.save(sesion);
+    return repo.findOne({
+      where: { id: saved.id },
+      relations: ["tratamiento"],
+    });
   }
 
   static async update(
@@ -54,6 +59,10 @@ export class HistorialSesionService {
     }
 
     Object.assign(sesion, data);
-    return repo.save(sesion);
+    await repo.save(sesion);
+    return repo.findOne({
+      where: { id: sesionId },
+      relations: ["tratamiento"],
+    });
   }
 }

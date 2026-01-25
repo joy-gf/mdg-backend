@@ -1,5 +1,6 @@
 import { AppDataSource } from "../config/datasource";
 import { AntecedentesPaciente } from "../entities/AntecedentesPaciente.entity";
+import { Paciente } from "../entities/Paciente.entity";
 
 export class AntecedentesPacienteService {
   private static repo = AppDataSource.getRepository(AntecedentesPaciente);
@@ -22,8 +23,25 @@ export class AntecedentesPacienteService {
     });
   }
 
-  static async create(data: Partial<AntecedentesPaciente>) {
-    const antecedente = this.repo.create(data);
+  static async create(data: any) {
+    const { pacienteId, ...rest } = data;
+
+    if (!pacienteId) {
+      throw new Error("pacienteId es requerido");
+    }
+
+    const pacienteRepo = AppDataSource.getRepository(Paciente);
+    const paciente = await pacienteRepo.findOneBy({ id: pacienteId });
+
+    if (!paciente) {
+      throw new Error("Paciente no encontrado");
+    }
+
+    const antecedente = this.repo.create({
+      ...rest,
+      paciente,
+    });
+
     const saved = await this.repo.save(antecedente);
     return this.repo.findOne({
       where: { id: saved.id },

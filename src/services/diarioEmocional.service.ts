@@ -152,10 +152,13 @@ export class DiarioEmocionalService {
       };
     }
 
-    const today = new Date().toISOString().split("T")[0];
-    const entryDate = new Date(entry.fecha_entrada).toISOString().split("T")[0];
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const entryDateObj = new Date(entry.fecha_entrada);
+    const entryDateLocal = new Date(entryDateObj.getFullYear(), entryDateObj.getMonth(), entryDateObj.getDate());
 
-    if (entryDate !== today) {
+    if (entryDateLocal.getTime() !== today.getTime()) {
       throw {
         status: 403,
         code: "ENTRADA_NO_ACTUALIZABLE",
