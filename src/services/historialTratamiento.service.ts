@@ -36,6 +36,18 @@ function encryptTratamientoFields(data: Partial<HistorialTratamiento>): Partial<
     }
   }
 
+  if ((encrypted as any).tareas_terapeuticas_list) {
+    if (Array.isArray((encrypted as any).tareas_terapeuticas_list)) {
+      (encrypted as any).tareas_terapeuticas_list = JSON.stringify((encrypted as any).tareas_terapeuticas_list);
+    } else if (typeof (encrypted as any).tareas_terapeuticas_list === "string") {
+      try {
+        JSON.parse((encrypted as any).tareas_terapeuticas_list);
+      } catch {
+        (encrypted as any).tareas_terapeuticas_list = JSON.stringify([]);
+      }
+    }
+  }
+
   return encrypted;
 }
 
@@ -54,6 +66,14 @@ function decryptTratamientoFields(tratamiento: HistorialTratamiento): HistorialT
       } catch (error) {
         // Si no es JSON válido o no se puede desencriptar, dejar el valor original
       }
+    }
+  }
+
+  if ((decrypted as any).tareas_terapeuticas_list && typeof (decrypted as any).tareas_terapeuticas_list === "string") {
+    try {
+      (decrypted as any).tareas_terapeuticas_list = JSON.parse((decrypted as any).tareas_terapeuticas_list);
+    } catch (error) {
+      (decrypted as any).tareas_terapeuticas_list = [];
     }
   }
 

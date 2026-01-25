@@ -104,8 +104,10 @@ export class AntecedentesPacienteService {
     return result ? decryptAntecedentesFields(result) : null;
   }
 
-  static async update(id: string, data: Partial<AntecedentesPaciente>) {
-    const encryptedData = encryptAntecedentesFields(data);
+  static async update(id: string, data: any) {
+    const { pacienteId, paciente, paciente_id, ...updateData } = data;
+
+    const encryptedData = encryptAntecedentesFields(updateData);
     await this.repo.update(id, encryptedData);
 
     const result = await this.repo.findOne({
