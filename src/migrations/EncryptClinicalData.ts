@@ -79,7 +79,7 @@ export class EncryptClinicalData1737644400000 implements MigrationInterface {
       RENAME COLUMN comentarios_finales TO comentarios_finales_encrypted
     `);
 
-    console.log("✅ historial_tratamiento table updated");
+    console.log("historial_tratamiento table updated");
 
     // ========================================
     // HISTORIAL_SESION TABLE
@@ -101,11 +101,11 @@ export class EncryptClinicalData1737644400000 implements MigrationInterface {
       RENAME COLUMN objetivos_proxima_sesion TO objetivos_proxima_sesion_encrypted
     `);
 
-    console.log("✅ historial_sesion table updated");
+    console.log("historial_sesion table updated");
 
-    console.log("🔐 Clinical data encryption migration completed successfully!");
-    console.log("⚠️  IMPORTANT: All existing data in these fields will need to be encrypted");
-    console.log("⚠️  or cleared. New records will be saved with encryption automatically.");
+    console.log("Clinical data encryption migration completed successfully!");
+    console.log("IMPORTANT: All existing data in these fields will need to be encrypted");
+    console.log("or cleared. New records will be saved with encryption automatically.");
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -171,7 +171,7 @@ export class EncryptClinicalData1737644400000 implements MigrationInterface {
       RENAME COLUMN comentarios_finales_encrypted TO comentarios_finales
     `);
 
-    console.log("✅ historial_tratamiento table reverted");
+    console.log("historial_tratamiento table reverted");
 
     // ========================================
     // REVERT HISTORIAL_SESION TABLE
@@ -193,8 +193,8 @@ export class EncryptClinicalData1737644400000 implements MigrationInterface {
       RENAME COLUMN objetivos_proxima_sesion_encrypted TO objetivos_proxima_sesion
     `);
 
-    console.log("✅ historial_sesion table reverted");
+    console.log("historial_sesion table reverted");
 
-    console.log("🔓 Encryption migration reverted successfully");
+    console.log("Encryption migration reverted successfully");
   }
 }

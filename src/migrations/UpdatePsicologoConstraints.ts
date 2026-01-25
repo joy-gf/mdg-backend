@@ -48,8 +48,8 @@ export class UpdatePsicologoConstraints1705000000002 implements MigrationInterfa
       ADD CONSTRAINT uq_psicologos_matricula UNIQUE (matricula_profesional)
     `);
 
-    console.log("✅ Constraints actualizados en tabla psicologos");
-    console.log("⚠️  IMPORTANTE: Actualizar los CIs y matrículas temporales con valores reales");
+    console.log("Constraints actualizados en tabla psicologos");
+    console.log("IMPORTANTE: Actualizar los CIs y matrículas temporales con valores reales");
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -73,6 +73,6 @@ export class UpdatePsicologoConstraints1705000000002 implements MigrationInterfa
       ALTER TABLE psicologos ALTER COLUMN ci DROP NOT NULL
     `);
 
-    console.log("✅ Constraints revertidos en tabla psicologos");
+    console.log("Constraints revertidos en tabla psicologos");
   }
 }

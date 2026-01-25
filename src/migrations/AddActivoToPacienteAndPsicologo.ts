@@ -18,9 +18,9 @@ export class AddActivoToPacienteAndPsicologo1737670000000 implements MigrationIn
         })
       );
 
-      console.log("✅ Columna 'activo' agregada a tabla pacientes");
+      console.log("Columna 'activo' agregada a tabla pacientes");
     } else {
-      console.log("⚠️ Columna 'activo' ya existe en tabla pacientes");
+      console.log("Columna 'activo' ya existe en tabla pacientes");
     }
 
     const psicologosTable = await queryRunner.getTable("psicologos");
@@ -37,9 +37,9 @@ export class AddActivoToPacienteAndPsicologo1737670000000 implements MigrationIn
         })
       );
 
-      console.log("✅ Columna 'activo' agregada a tabla psicologos");
+      console.log("Columna 'activo' agregada a tabla psicologos");
     } else {
-      console.log("⚠️ Columna 'activo' ya existe en tabla psicologos");
+      console.log("Columna 'activo' ya existe en tabla psicologos");
     }
 
     await queryRunner.query(`
@@ -54,7 +54,7 @@ export class AddActivoToPacienteAndPsicologo1737670000000 implements MigrationIn
       WHERE activo IS NULL
     `);
 
-    console.log("✅ Registros existentes marcados como activos");
+    console.log("Registros existentes marcados como activos");
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -63,7 +63,7 @@ export class AddActivoToPacienteAndPsicologo1737670000000 implements MigrationIn
 
     if (psicologosActivoColumn) {
       await queryRunner.dropColumn("psicologos", "activo");
-      console.log("✅ Columna 'activo' eliminada de tabla psicologos");
+      console.log("Columna 'activo' eliminada de tabla psicologos");
     }
 
     const pacientesTable = await queryRunner.getTable("pacientes");
@@ -71,7 +71,7 @@ export class AddActivoToPacienteAndPsicologo1737670000000 implements MigrationIn
 
     if (pacientesActivoColumn) {
       await queryRunner.dropColumn("pacientes", "activo");
-      console.log("✅ Columna 'activo' eliminada de tabla pacientes");
+      console.log("Columna 'activo' eliminada de tabla pacientes");
     }
   }
 }

@@ -48,6 +48,14 @@ export class HistorialTratamientoService {
     return repo.save(tratamiento);
   }
 
+  static async update(id: string, data: Partial<HistorialTratamiento>) {
+    const tratamiento = await repo.findOneBy({ id });
+    if (!tratamiento) throw new Error("Tratamiento no encontrado");
+
+    Object.assign(tratamiento, data);
+    return repo.save(tratamiento);
+  }
+
   static async cerrar(id: string, comentarios_finales_encrypted?: string) {
     const tratamiento = await repo.findOneBy({ id });
     if (!tratamiento) throw new Error("Tratamiento no encontrado");

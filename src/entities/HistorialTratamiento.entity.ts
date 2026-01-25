@@ -9,30 +9,21 @@ import { Paciente } from "./Paciente.entity";
 import { Psicologo } from "./Psicologo.entity";
 import { HistorialSesion } from "./HistorialSesion.entity";
 
-
 @Entity("historial_tratamiento")
 export class HistorialTratamiento {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  /* RELACIONES */
-  @ManyToOne(() => Paciente, (p) => p.tratamientos, {
-    onDelete: "CASCADE",
-  })
+  @ManyToOne(() => Paciente, (p) => p.tratamientos, { onDelete: "CASCADE" })
   paciente!: Paciente;
 
-  @ManyToOne(() => Psicologo, (p) => p.tratamientos, {
-    nullable: true,
-    onDelete: "SET NULL",
-  })
+  @ManyToOne(() => Psicologo, (p) => p.tratamientos, { nullable: true, onDelete: "SET NULL" })
   psicologo!: Psicologo | null;
 
-  @OneToMany(() => HistorialSesion,
-    (s) => s.tratamiento
-  )
+  @OneToMany(() => HistorialSesion, (s) => s.tratamiento)
   sesiones!: HistorialSesion[];
 
-  /* DATOS CLÍNICOS CIFRADOS */
+  // Campos clínicos encriptados
   @Column({ type: "text", nullable: true })
   antecedentes_terapeuticos_previos_encrypted!: string | null;
 
@@ -69,10 +60,14 @@ export class HistorialTratamiento {
   @Column({ type: "text", nullable: true })
   recomendaciones_iniciales_encrypted!: string | null;
 
+  // Notas adicionales sobre tareas (texto libre)
   @Column({ type: "text", nullable: true })
   tareas_terapeuticas_encrypted!: string | null;
 
-  /* ESTADO DEL TRATAMIENTO */
+  // Lista de tareas seleccionadas (array)
+  @Column({ type: "text", nullable: true })
+  tareas_terapeuticas_list_encrypted!: string | null;
+
   @Column({ type: "date", default: () => "CURRENT_DATE" })
   fecha_inicio!: Date;
 

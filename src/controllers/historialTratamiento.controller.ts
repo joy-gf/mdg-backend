@@ -68,6 +68,29 @@ export class HistorialTratamientoController {
     }
   }
 
+  static async update(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const data = await HistorialTratamientoService.update(id, req.body);
+
+      res.json(data);
+    } catch (error: any) {
+      console.error("Error updating tratamiento:", error);
+
+      if (error.message === "Tratamiento no encontrado") {
+        return res.status(404).json({
+          error: "TRATAMIENTO_NO_ENCONTRADO",
+          message: error.message,
+        });
+      }
+
+      res.status(500).json({
+        error: "Error al actualizar tratamiento",
+        details: error.message,
+      });
+    }
+  }
+
   static async cerrar(req: Request, res: Response) {
     try {
       const { id } = req.params;

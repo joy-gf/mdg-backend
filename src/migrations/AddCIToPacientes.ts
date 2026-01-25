@@ -35,7 +35,7 @@ export class AddCIToPacientes1705000000001 implements MigrationInterface {
       CREATE UNIQUE INDEX IF NOT EXISTS idx_pacientes_ci ON pacientes(ci)
     `);
 
-    console.log("✅ Columna CI agregada a tabla pacientes con constraint UNIQUE");
+    console.log("Columna CI agregada a tabla pacientes con constraint UNIQUE");
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
@@ -47,6 +47,6 @@ export class AddCIToPacientes1705000000001 implements MigrationInterface {
     // Eliminar columna CI
     await queryRunner.dropColumn("pacientes", "ci");
 
-    console.log("✅ Columna CI eliminada de tabla pacientes");
+    console.log("Columna CI eliminada de tabla pacientes");
   }
 }

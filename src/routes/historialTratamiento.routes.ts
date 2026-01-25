@@ -19,6 +19,11 @@ router.get(
 );
 
 router.put(
+  "/tratamientos/:id",
+  HistorialTratamientoController.update
+);
+
+router.put(
   "/tratamientos/:id/cerrar",
   HistorialTratamientoController.cerrar
 );

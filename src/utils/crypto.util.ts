@@ -77,7 +77,7 @@ export function getEncryptionKey(): Buffer {
   const secret = process.env.ENCRYPTION_SECRET || "default-dev-secret-change-in-production";
 
   if (secret === "default-dev-secret-change-in-production") {
-    console.warn("⚠️  Using default encryption secret. Set ENCRYPTION_SECRET in production!");
+    console.warn("Using default encryption secret. Set ENCRYPTION_SECRET in production!");
   }
 
   return deriveKey(secret);
