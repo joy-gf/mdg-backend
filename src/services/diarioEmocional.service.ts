@@ -43,10 +43,9 @@ export class DiarioEmocionalService {
       };
     }
 
-    // Crear entrada
     const entrada = this.repo.create({
       paciente_id: data.paciente_id,
-      fecha_entrada: new Date(data.fecha_entrada),
+      fecha_entrada: data.fecha_entrada, // Keep as string, TypeORM will handle DATE type correctly
       emocion_seleccionada: data.emocion_seleccionada,
       texto_entrada_encrypted: data.texto_entrada_encrypted,
     });
@@ -127,8 +126,7 @@ export class DiarioEmocionalService {
   }
 
   /**
-   * Actualizar data existente solo para la entrada del día actual
-   *
+   * Actualizar entrada del diario emocional
    *
    * @param id - Entry ID
    * @param paciente_id - Patient ID (for validation)
@@ -149,20 +147,6 @@ export class DiarioEmocionalService {
         status: 404,
         code: "ENTRADA_NO_ENCONTRADA",
         message: "Entrada no encontrada o no pertenece al paciente",
-      };
-    }
-
-    
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const entryDateObj = new Date(entry.fecha_entrada);
-    const entryDateLocal = new Date(entryDateObj.getFullYear(), entryDateObj.getMonth(), entryDateObj.getDate());
-
-    if (entryDateLocal.getTime() !== today.getTime()) {
-      throw {
-        status: 403,
-        code: "ENTRADA_NO_ACTUALIZABLE",
-        message: "Solo se pueden actualizar entradas del día actual",
       };
     }
 

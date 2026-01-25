@@ -69,7 +69,7 @@ export class HistorialTratamientoService {
     if (!tratamiento) throw new Error("Tratamiento no encontrado");
 
     tratamiento.activo = false;
-    tratamiento.fecha_cierre = new Date();
+    tratamiento.fecha_cierre = new Date().toISOString().split('T')[0] as any;
     tratamiento.comentarios_finales_encrypted = comentarios_finales_encrypted ?? null;
 
     await repo.save(tratamiento);

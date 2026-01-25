@@ -32,19 +32,17 @@ export class CitasService {
     pacienteId: string;
     psicologoId: string;
     consultorioId?: string;
-    fecha_sesion: Date;
-    hora_sesion: Date;
+    fecha_sesion: string;
+    hora_sesion: string;
     duracion_minutos: number;
     tipo_cita: string;
     direccion_cita?: string;
     link_cita?: string;
   }) {
 
-    const inicio = new Date(`${data.fecha_sesion}T${data.hora_sesion}:00`);
-    console.log(inicio)
-    const fin = new Date(
-      inicio.getTime() + data.duracion_minutos * 60000
-    );
+    const fechaHoraISO = `${data.fecha_sesion}T${data.hora_sesion}:00`;
+    const inicio = new Date(fechaHoraISO);
+    const fin = new Date(inicio.getTime() + data.duracion_minutos * 60000);
 
     await this.validarDisponibilidad(
       data.consultorioId!,
@@ -59,15 +57,14 @@ export class CitasService {
       consultorio: data.consultorioId
         ? ({ id: data.consultorioId } as Consultorio)
         : null,
-      fecha_sesion: inicio,
-      hora_sesion: inicio,
+      fecha_sesion: fechaHoraISO as any,
+      hora_sesion: fechaHoraISO as any,
       duracion_minutos: data.duracion_minutos,
       tipo_cita: data.tipo_cita,
       direccion_cita: data.direccion_cita,
       link_cita: data.link_cita,
     });
 
-    console.log(cita)
     return this.repo.save(cita);
   }
 
@@ -77,12 +74,14 @@ export class CitasService {
 
   static async reprogramar(
     id: string,
-    fecha_sesion: Date,
-    hora_sesion: Date
+    fecha_sesion: string,
+    hora_sesion: string
   ) {
+    const fechaHoraISO = `${fecha_sesion}T${hora_sesion}:00`;
+
     await this.repo.update(id, {
-      fecha_sesion,
-      hora_sesion,
+      fecha_sesion: fechaHoraISO as any,
+      hora_sesion: fechaHoraISO as any,
       estado: "reprogramada",
     });
   }

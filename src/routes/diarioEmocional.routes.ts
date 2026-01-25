@@ -33,7 +33,6 @@ router.get("/paciente/:pacienteId/count", DiarioEmocionalController.getCount);
 // Get single entry by ID (requires paciente_id query param for security)
 router.get("/:id", DiarioEmocionalController.getById);
 
-// Update entry (only same-day updates allowed for clinical data integrity)
 router.put("/:id", DiarioEmocionalController.update);
 
 export default router;

@@ -7,7 +7,6 @@ import { DiarioEmocionalService } from "../services/diarioEmocional.service";
  * Security Notes:
  * - Authentication middleware should validate JWT token before reaching controller
  * - Only patients can create/read their own diary entries
- * - NO update or delete endpoints (clinical data integrity requirement)
  * - All text is stored encrypted in database
  */
 export class DiarioEmocionalController {
