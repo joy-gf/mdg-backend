@@ -11,7 +11,7 @@ export class HistorialTratamientoService {
       where: {
         paciente: { id: pacienteId },
       },
-      relations: ["psicologo"],
+      relations: ["paciente", "psicologo"],
       order: { fecha_inicio: "DESC" },
     });
   }
@@ -45,7 +45,11 @@ export class HistorialTratamientoService {
       psicologo,
     });
 
-    return repo.save(tratamiento);
+    const saved = await repo.save(tratamiento);
+    return repo.findOne({
+      where: { id: saved.id },
+      relations: ["paciente", "psicologo"],
+    });
   }
 
   static async update(id: string, data: Partial<HistorialTratamiento>) {
@@ -53,7 +57,11 @@ export class HistorialTratamientoService {
     if (!tratamiento) throw new Error("Tratamiento no encontrado");
 
     Object.assign(tratamiento, data);
-    return repo.save(tratamiento);
+    await repo.save(tratamiento);
+    return repo.findOne({
+      where: { id },
+      relations: ["paciente", "psicologo"],
+    });
   }
 
   static async cerrar(id: string, comentarios_finales_encrypted?: string) {
@@ -64,6 +72,10 @@ export class HistorialTratamientoService {
     tratamiento.fecha_cierre = new Date();
     tratamiento.comentarios_finales_encrypted = comentarios_finales_encrypted ?? null;
 
-    return repo.save(tratamiento);
+    await repo.save(tratamiento);
+    return repo.findOne({
+      where: { id },
+      relations: ["paciente", "psicologo"],
+    });
   }
 }

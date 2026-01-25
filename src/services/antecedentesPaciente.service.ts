@@ -22,13 +22,21 @@ export class AntecedentesPacienteService {
     });
   }
 
-  static create(data: Partial<AntecedentesPaciente>) {
+  static async create(data: Partial<AntecedentesPaciente>) {
     const antecedente = this.repo.create(data);
-    return this.repo.save(antecedente);
+    const saved = await this.repo.save(antecedente);
+    return this.repo.findOne({
+      where: { id: saved.id },
+      relations: ["paciente"],
+    });
   }
 
-  static update(id: string, data: Partial<AntecedentesPaciente>) {
-    return this.repo.update(id, data);
+  static async update(id: string, data: Partial<AntecedentesPaciente>) {
+    await this.repo.update(id, data);
+    return this.repo.findOne({
+      where: { id },
+      relations: ["paciente"],
+    });
   }
 
   static delete(id: string) {

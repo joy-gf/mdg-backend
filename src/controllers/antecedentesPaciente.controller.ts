@@ -25,8 +25,8 @@ export class AntecedentesPacienteController {
   }
 
   static async update(req: Request, res: Response) {
-    await AntecedentesPacienteService.update(req.params.id, req.body);
-    res.json({ success: true });
+    const data = await AntecedentesPacienteService.update(req.params.id, req.body);
+    res.json(data);
   }
 
   static async delete(req: Request, res: Response) {
