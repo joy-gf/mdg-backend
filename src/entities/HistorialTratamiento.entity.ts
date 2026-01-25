@@ -23,8 +23,7 @@ export class HistorialTratamiento {
   @OneToMany(() => HistorialSesion, (s) => s.tratamiento)
   sesiones!: HistorialSesion[];
 
-  // Campos clínicos encriptados
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text", nullable: true, comment: "Encrypted JSON: {iv, ciphertext}" })
   antecedentes_terapeuticos_previos_encrypted!: string | null;
 
   @Column({ type: "boolean", nullable: true })

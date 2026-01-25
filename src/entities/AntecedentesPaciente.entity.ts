@@ -14,12 +14,12 @@ export class AntecedentesPaciente {
   @ManyToOne(() => Paciente, (p) => p.antecedentes, { onDelete: "CASCADE" })
   paciente!: Paciente;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text", nullable: true, comment: "Encrypted JSON: {iv, ciphertext}" })
   personales!: string;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text", nullable: true, comment: "Encrypted JSON: {iv, ciphertext}" })
   familiares!: string;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text", nullable: true, comment: "Encrypted JSON: {iv, ciphertext}" })
   medicos_psiquiatricos!: string;
 }

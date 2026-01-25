@@ -4,7 +4,8 @@ import { PacientesService } from "../services/paciente.service";
 export class PacientesController {
   static async getAll(req: Request, res: Response) {
     const search = req.query.search as string;
-    const data = await PacientesService.getAll(search);
+    const psicologoId = req.query.psicologoId as string;
+    const data = await PacientesService.getAll(search, psicologoId);
     res.json(data);
   }
 

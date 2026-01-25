@@ -23,15 +23,15 @@ export class HistorialSesion {
   @Column({ type: "date", default: () => "CURRENT_DATE" })
   fecha_sesion!: Date;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text", nullable: true, comment: "Encrypted JSON: {iv, ciphertext}" })
   seguimiento_encrypted!: string | null;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text", nullable: true, comment: "Encrypted JSON: {iv, ciphertext}" })
   recomendaciones_encrypted!: string | null;
 
   @Column({ type: "date", nullable: true })
   fecha_proxima_sesion!: Date | null;
 
-  @Column({ type: "text", nullable: true })
+  @Column({ type: "text", nullable: true, comment: "Encrypted JSON: {iv, ciphertext}" })
   objetivos_proxima_sesion_encrypted!: string | null;
 }

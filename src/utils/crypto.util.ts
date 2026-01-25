@@ -70,15 +70,25 @@ export function decryptText(payload: EncryptedPayload, key: Buffer): string {
 }
 
 /**
+ * Encrypts JSON object
+ */
+export function encryptJson(data: any, key: Buffer): EncryptedPayload {
+  const jsonString = JSON.stringify(data);
+  return encryptText(jsonString, key);
+}
+
+/**
+ * Decrypts JSON object
+ */
+export function decryptJson(payload: EncryptedPayload, key: Buffer): any {
+  const jsonString = decryptText(payload, key);
+  return JSON.parse(jsonString);
+}
+
+/**
  * Get encryption key from environment variable
- * Falls back to default if not set (NOT recommended for production)
  */
 export function getEncryptionKey(): Buffer {
   const secret = process.env.ENCRYPTION_SECRET || "default-dev-secret-change-in-production";
-
-  if (secret === "default-dev-secret-change-in-production") {
-    console.warn("Using default encryption secret. Set ENCRYPTION_SECRET in production!");
-  }
-
   return deriveKey(secret);
 }

@@ -3,10 +3,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   OneToMany,
+  ManyToOne,
   CreateDateColumn,
 } from "typeorm";
 import { AntecedentesPaciente } from "./AntecedentesPaciente.entity";
 import { HistorialTratamiento } from "./HistorialTratamiento.entity";
+import { Psicologo } from "./Psicologo.entity";
 
 @Entity("pacientes")
 export class Paciente {
@@ -15,6 +17,9 @@ export class Paciente {
 
   @Column({ type: "uuid", nullable: true })
   usuario_id!: string | null;
+
+  @Column({ type: "uuid", nullable: true })
+  psicologo_id!: string | null;
 
   @Column({ length: 120 })
   nombres!: string;
@@ -56,6 +61,9 @@ export class Paciente {
   activo!: boolean;
 
   /* RELACIONES */
+  @ManyToOne(() => Psicologo, { nullable: true, onDelete: "SET NULL" })
+  psicologo!: Psicologo | null;
+
   @OneToMany(() => AntecedentesPaciente, (a) => a.paciente)
   antecedentes!: AntecedentesPaciente[];
 

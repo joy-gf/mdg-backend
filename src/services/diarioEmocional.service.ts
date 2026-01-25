@@ -1,13 +1,12 @@
 import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { DiarioEmocional } from "../entities/DiarioEmocional.entity";
 import { AppDataSource } from "../config/datasource";
-import { decryptText, getEncryptionKey } from "../utils/crypto.util";
 
 interface CreateDiarioInput {
   paciente_id: string;
   fecha_entrada: Date | string;
   emocion_seleccionada: string;
-  texto_entrada_encrypted: string; // JSON string: { iv, ciphertext }
+  texto_entrada: string;
 }
 
 interface GetEntriesFilters {
@@ -18,15 +17,7 @@ interface GetEntriesFilters {
 export class DiarioEmocionalService {
   private static repo = AppDataSource.getRepository(DiarioEmocional);
 
-  /**
-   * Create a new diary entry
-   * Text is stored encrypted, but temporarily decrypted for ML analysis
-   *
-   * @param data - Entry data with encrypted text
-   * @returns Created entry (with encrypted text)
-   */
   static async create(data: CreateDiarioInput) {
-    // Validaciones básicas
     if (!data.paciente_id) {
       throw {
         status: 400,
@@ -35,7 +26,7 @@ export class DiarioEmocionalService {
       };
     }
 
-    if (!data.texto_entrada_encrypted) {
+    if (!data.texto_entrada) {
       throw {
         status: 400,
         code: "TEXTO_REQUERIDO",
@@ -45,9 +36,9 @@ export class DiarioEmocionalService {
 
     const entrada = this.repo.create({
       paciente_id: data.paciente_id,
-      fecha_entrada: data.fecha_entrada, // Keep as string, TypeORM will handle DATE type correctly
+      fecha_entrada: data.fecha_entrada,
       emocion_seleccionada: data.emocion_seleccionada,
-      texto_entrada_encrypted: data.texto_entrada_encrypted,
+      texto_entrada: data.texto_entrada,
     });
 
     return this.repo.save(entrada);
@@ -55,7 +46,6 @@ export class DiarioEmocionalService {
 
   /**
    * Get all entries for a patient
-   * Returns encrypted entries (frontend will decrypt)
    *
    * @param paciente_id - Patient ID
    * @param filters - Optional date range filters
@@ -104,28 +94,6 @@ export class DiarioEmocionalService {
   }
 
   /**
-   * Decrypt entry text for ML analysis (temporary, in-memory only)
-   * NEVER store the decrypted text in database
-   *
-   * @param encrypted_payload - JSON string with { iv, ciphertext }
-   * @returns Decrypted plaintext
-   */
-  static decryptForAnalysis(encrypted_payload: string): string {
-    try {
-      const payload = JSON.parse(encrypted_payload);
-      const key = getEncryptionKey();
-      return decryptText(payload, key);
-    } catch (error) {
-      console.error("Error decrypting text:", error);
-      throw {
-        status: 500,
-        code: "ERROR_DESENCRIPTACION",
-        message: "No se pudo desencriptar el texto para análisis",
-      };
-    }
-  }
-
-  /**
    * Actualizar entrada del diario emocional
    *
    * @param id - Entry ID
@@ -153,8 +121,8 @@ export class DiarioEmocionalService {
     if (data.emocion_seleccionada !== undefined) {
       entry.emocion_seleccionada = data.emocion_seleccionada;
     }
-    if (data.texto_entrada_encrypted !== undefined) {
-      entry.texto_entrada_encrypted = data.texto_entrada_encrypted;
+    if (data.texto_entrada !== undefined) {
+      entry.texto_entrada = data.texto_entrada;
     }
 
     return this.repo.save(entry);

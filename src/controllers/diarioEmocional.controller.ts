@@ -6,8 +6,6 @@ import { DiarioEmocionalService } from "../services/diarioEmocional.service";
  *
  * Security Notes:
  * - Authentication middleware should validate JWT token before reaching controller
- * - Only patients can create/read their own diary entries
- * - All text is stored encrypted in database
  */
 export class DiarioEmocionalController {
   /**
@@ -19,7 +17,7 @@ export class DiarioEmocionalController {
    *   paciente_id: string,
    *   fecha_entrada: string (YYYY-MM-DD),
    *   emocion_seleccionada: string,
-   *   texto_entrada_encrypted: string (JSON: {iv, ciphertext})
+   *   texto_entrada: string
    * }
    */
   static async create(req: Request, res: Response) {
@@ -27,8 +25,7 @@ export class DiarioEmocionalController {
       const data = await DiarioEmocionalService.create(req.body);
 
       // TODO: Call ML service for sentiment analysis
-      // const plaintext = DiarioEmocionalService.decryptForAnalysis(data.texto_entrada_encrypted);
-      // const analisis = await SentimentAnalysisService.analyze(plaintext, data.id);
+      // const analisis = await SentimentAnalysisService.analyze(data.texto_entrada, data.id);
 
       res.status(201).json(data);
     } catch (error: any) {

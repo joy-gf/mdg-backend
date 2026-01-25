@@ -12,16 +12,22 @@ interface CreatePacienteWithUserInput {
 export class PacientesService {
   private static repo = AppDataSource.getRepository(Paciente);
 
-  static getAll(search?: string) {
+  static getAll(search?: string, psicologoId?: string) {
+    const baseWhere: any = { activo: true };
+
+    if (psicologoId) {
+      baseWhere.psicologo_id = psicologoId;
+    }
+
     if (search) {
       return this.repo.find({
         where: [
-          { nombres: ILike(`%${search}%`), activo: true },
-          { apellidos: ILike(`%${search}%`), activo: true },
+          { ...baseWhere, nombres: ILike(`%${search}%`) },
+          { ...baseWhere, apellidos: ILike(`%${search}%`) },
         ],
       });
     }
-    return this.repo.find({ where: { activo: true } });
+    return this.repo.find({ where: baseWhere });
   }
 
   static getById(id: string) {
