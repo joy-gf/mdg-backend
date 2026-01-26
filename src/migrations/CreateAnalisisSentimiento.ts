@@ -47,7 +47,7 @@ export class CreateAnalisisSentimiento1737900000000 implements MigrationInterfac
 
         CONSTRAINT fk_analisis_paciente
           FOREIGN KEY (paciente_id)
-          REFERENCES paciente(id)
+          REFERENCES pacientes(id)
           ON DELETE CASCADE
       )
     `);

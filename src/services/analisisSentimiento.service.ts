@@ -204,18 +204,20 @@ export class AnalisisSentimientoService {
       .filter((a) => a.alertas && a.alertas.length > 0)
       .flatMap((a) => a.alertas || []);
 
-    const evolucionTemporal = analisis.map((a) => ({
-      fecha: a.fecha_analisis,
-      sentimiento: a.sentimiento_general,
-      score:
-        a.sentimiento_general === "esperanzador"
-          ? a.confianza
-          : a.sentimiento_general === "desafiante"
-          ? -a.confianza
-          : 0,
-      emocion: a.emocion_predominante,
-      confianza: a.confianza,
-    }));
+    const evolucionTemporal = analisis
+      .map((a) => ({
+        fecha: a.fecha_analisis,
+        sentimiento: a.sentimiento_general,
+        score:
+          a.sentimiento_general === "esperanzador"
+            ? a.confianza
+            : a.sentimiento_general === "desafiante"
+            ? -a.confianza
+            : 0,
+        emocion: a.emocion_predominante,
+        confianza: a.confianza,
+      }))
+      .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
 
     return {
       total_entradas: analisis.length,
