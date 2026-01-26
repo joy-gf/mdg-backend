@@ -59,13 +59,11 @@ export class HistorialTratamiento {
   @Column({ type: "text", nullable: true })
   recomendaciones_iniciales_encrypted!: string | null;
 
-  // Notas adicionales sobre tareas (texto libre)
   @Column({ type: "text", nullable: true })
-  tareas_terapeuticas_encrypted!: string | null;
+  tareas_terapeuticas!: string | null;
 
-  // Lista de tareas seleccionadas (array)
   @Column({ type: "text", nullable: true })
-  tareas_terapeuticas_list_encrypted!: string | null;
+  tareas_terapeuticas_list!: string | null;
 
   @Column({ type: "date", default: () => "CURRENT_DATE" })
   fecha_inicio!: Date;

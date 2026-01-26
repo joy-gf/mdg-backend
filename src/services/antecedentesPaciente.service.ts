@@ -17,10 +17,16 @@ function encryptAntecedentesFields(data: Partial<AntecedentesPaciente>): Partial
     const value = data[field];
     if (value && typeof value === "string" && value.trim() !== "") {
       try {
+        const parsed = JSON.parse(value);
+        if (parsed.iv && parsed.ciphertext) {
+          (encrypted as any)[field] = value;
+        } else {
+          const encryptedPayload = encryptText(value, key);
+          (encrypted as any)[field] = JSON.stringify(encryptedPayload);
+        }
+      } catch {
         const encryptedPayload = encryptText(value, key);
         (encrypted as any)[field] = JSON.stringify(encryptedPayload);
-      } catch (error) {
-        console.error(`Error encriptando campo ${field}:`, error);
       }
     }
   }
