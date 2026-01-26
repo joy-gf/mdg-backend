@@ -25,6 +25,9 @@ export class DiarioEmocional {
   @Column({ type: "text" })
   texto_entrada!: string;
 
+  @Column({ type: "varchar", length: 20, default: "pendiente" })
+  estado_analisis!: "pendiente" | "analizado" | "error";
+
   @CreateDateColumn({ type: "timestamp" })
   created_at!: Date;
 

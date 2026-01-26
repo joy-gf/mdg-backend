@@ -10,6 +10,7 @@ import { Cita } from "../entities/Cita.entity";
 import { Usuario } from "../entities/Usuario.entity";
 import { Rol } from "../entities/Rol.entity";
 import { DiarioEmocional } from "../entities/DiarioEmocional.entity";
+import { AnalisisSentimiento } from "../entities/AnalisisSentimiento.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -32,7 +33,8 @@ export const AppDataSource = new DataSource({
     Cita,
     Usuario,
     Rol,
-    DiarioEmocional
+    DiarioEmocional,
+    AnalisisSentimiento
   ],
   migrations: ["src/migrations/*.ts"],
 });
