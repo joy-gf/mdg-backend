@@ -8,6 +8,12 @@ import {
 import { DiarioEmocional } from "./DiarioEmocional.entity";
 import { Paciente } from "./Paciente.entity";
 
+// Transformer para convertir decimales de PostgreSQL (strings) a números
+const DecimalTransformer = {
+  to: (value: number): number => value,
+  from: (value: string): number => parseFloat(value),
+};
+
 @Entity("analisis_sentimiento")
 export class AnalisisSentimiento {
   @PrimaryGeneratedColumn("uuid")
@@ -33,16 +39,16 @@ export class AnalisisSentimiento {
   @Column({ type: "varchar", length: 20 })
   sentimiento_general!: "esperanzador" | "desafiante" | "equilibrado";
 
-  @Column({ type: "decimal", precision: 5, scale: 4 })
+  @Column({ type: "decimal", precision: 5, scale: 4, transformer: DecimalTransformer })
   confianza!: number;
 
-  @Column({ type: "decimal", precision: 5, scale: 4, default: 0 })
+  @Column({ type: "decimal", precision: 5, scale: 4, default: 0, transformer: DecimalTransformer })
   score_positivo!: number;
 
-  @Column({ type: "decimal", precision: 5, scale: 4, default: 0 })
+  @Column({ type: "decimal", precision: 5, scale: 4, default: 0, transformer: DecimalTransformer })
   score_negativo!: number;
 
-  @Column({ type: "decimal", precision: 5, scale: 4, default: 0 })
+  @Column({ type: "decimal", precision: 5, scale: 4, default: 0, transformer: DecimalTransformer })
   score_neutral!: number;
 
   @Column({ type: "varchar", length: 50, nullable: true })
