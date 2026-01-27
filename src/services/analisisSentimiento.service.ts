@@ -174,13 +174,9 @@ export class AnalisisSentimientoService {
     });
 
     const sumScores = analisis.reduce((acc, a) => {
-      const confianza = typeof a.confianza === 'number' ? a.confianza : 0;
-      const score =
-        a.sentimiento_general === "esperanzador"
-          ? confianza
-          : a.sentimiento_general === "desafiante"
-          ? -confianza
-          : 0;
+      const scorePositivo = typeof a.score_positivo === 'number' ? a.score_positivo : 0;
+      const scoreNegativo = typeof a.score_negativo === 'number' ? a.score_negativo : 0;
+      const score = scorePositivo - scoreNegativo;
       return acc + score;
     }, 0);
 
@@ -207,22 +203,73 @@ export class AnalisisSentimientoService {
 
     const evolucionTemporal = analisis
       .map((a) => {
-        // Asegurar que confianza sea un número válido, usar 0 si es null/undefined
+        const scorePositivo = typeof a.score_positivo === 'number' ? a.score_positivo : 0;
+        const scoreNegativo = typeof a.score_negativo === 'number' ? a.score_negativo : 0;
+        const score = scorePositivo - scoreNegativo;
         const confianza = typeof a.confianza === 'number' ? a.confianza : 0;
+
         return {
           fecha: a.fecha_analisis,
           sentimiento: a.sentimiento_general,
-          score:
-            a.sentimiento_general === "esperanzador"
-              ? confianza
-              : a.sentimiento_general === "desafiante"
-              ? -confianza
-              : 0,
+          score: score,
           emocion: a.emocion_predominante,
           confianza: confianza,
         };
       })
       .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
+
+    const insights: Array<{ type: string; text: string }> = [];
+
+    // Insight sobre sentimiento promedio
+    if (sentimientoPromedio >= 0.3) {
+      insights.push({
+        type: "positive",
+        text: "El estado emocional general es positivo. Continúa con las actividades que te hacen sentir bien.",
+      });
+    } else if (sentimientoPromedio <= -0.3) {
+      insights.push({
+        type: "warning",
+        text: "Se detecta un estado emocional negativo predominante. Considera hablar con tu psicólogo sobre esto.",
+      });
+    }
+
+    // Insight sobre tendencia
+    if (evolucionTemporal.length >= 3) {
+      const primerosScores = evolucionTemporal.slice(0, Math.min(3, Math.ceil(evolucionTemporal.length / 2)));
+      const ultimosScores = evolucionTemporal.slice(-Math.min(3, Math.ceil(evolucionTemporal.length / 2)));
+
+      const promedioInicial = primerosScores.reduce((sum, e) => sum + e.score, 0) / primerosScores.length;
+      const promedioReciente = ultimosScores.reduce((sum, e) => sum + e.score, 0) / ultimosScores.length;
+
+      if (promedioReciente > promedioInicial + 0.15) {
+        insights.push({
+          type: "positive",
+          text: "Tu estado emocional está mejorando con el tiempo. ¡Excelente progreso!",
+        });
+      } else if (promedioReciente < promedioInicial - 0.15) {
+        insights.push({
+          type: "warning",
+          text: "Se observa un declive en tu estado emocional. Es importante hablar sobre esto en la próxima sesión.",
+        });
+      }
+    }
+
+    // Insight sobre emoción predominante
+    const emocionMasFrecuente = Object.entries(distribucionEmociones)
+      .sort((a, b) => b[1] - a[1])[0];
+
+    if (emocionMasFrecuente) {
+      const [emocion, count] = emocionMasFrecuente;
+      const porcentaje = (count / analisis.length) * 100;
+
+      if (porcentaje >= 50) {
+        const esNegativa = ["Ansioso", "Estresado", "Triste", "Molesto", "Frustrado"].includes(emocion);
+        insights.push({
+          type: esNegativa ? "warning" : "neutral",
+          text: `La emoción "${emocion}" aparece en ${porcentaje.toFixed(0)}% de tus entradas.`,
+        });
+      }
+    }
 
     return {
       total_entradas: analisis.length,
@@ -231,6 +278,7 @@ export class AnalisisSentimientoService {
       palabras_clave: palabrasClave,
       alertas,
       evolucion_temporal: evolucionTemporal,
+      insights,
     };
   }
 }
