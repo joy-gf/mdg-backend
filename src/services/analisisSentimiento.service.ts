@@ -174,16 +174,17 @@ export class AnalisisSentimientoService {
     });
 
     const sumScores = analisis.reduce((acc, a) => {
+      const confianza = typeof a.confianza === 'number' ? a.confianza : 0;
       const score =
         a.sentimiento_general === "esperanzador"
-          ? a.confianza
+          ? confianza
           : a.sentimiento_general === "desafiante"
-          ? -a.confianza
+          ? -confianza
           : 0;
       return acc + score;
     }, 0);
 
-    const sentimientoPromedio = sumScores / analisis.length;
+    const sentimientoPromedio = analisis.length > 0 ? sumScores / analisis.length : 0;
 
     const palabrasClaveTotales: Record<string, number> = {};
     analisis.forEach((a) => {
@@ -205,18 +206,22 @@ export class AnalisisSentimientoService {
       .flatMap((a) => a.alertas || []);
 
     const evolucionTemporal = analisis
-      .map((a) => ({
-        fecha: a.fecha_analisis,
-        sentimiento: a.sentimiento_general,
-        score:
-          a.sentimiento_general === "esperanzador"
-            ? a.confianza
-            : a.sentimiento_general === "desafiante"
-            ? -a.confianza
-            : 0,
-        emocion: a.emocion_predominante,
-        confianza: a.confianza,
-      }))
+      .map((a) => {
+        // Asegurar que confianza sea un número válido, usar 0 si es null/undefined
+        const confianza = typeof a.confianza === 'number' ? a.confianza : 0;
+        return {
+          fecha: a.fecha_analisis,
+          sentimiento: a.sentimiento_general,
+          score:
+            a.sentimiento_general === "esperanzador"
+              ? confianza
+              : a.sentimiento_general === "desafiante"
+              ? -confianza
+              : 0,
+          emocion: a.emocion_predominante,
+          confianza: confianza,
+        };
+      })
       .sort((a, b) => new Date(a.fecha).getTime() - new Date(b.fecha).getTime());
 
     return {
