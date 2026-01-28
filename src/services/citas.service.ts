@@ -57,8 +57,8 @@ export class CitasService {
       consultorio: data.consultorioId
         ? ({ id: data.consultorioId } as Consultorio)
         : null,
-      fecha_sesion: fechaHoraISO as any,
-      hora_sesion: fechaHoraISO as any,
+      fecha_sesion: data.fecha_sesion, // YYYY-MM-DD
+      hora_sesion: data.hora_sesion,   // HH:mm
       duracion_minutos: data.duracion_minutos,
       tipo_cita: data.tipo_cita,
       direccion_cita: data.direccion_cita,
@@ -77,11 +77,9 @@ export class CitasService {
     fecha_sesion: string,
     hora_sesion: string
   ) {
-    const fechaHoraISO = `${fecha_sesion}T${hora_sesion}:00`;
-
     await this.repo.update(id, {
-      fecha_sesion: fechaHoraISO as any,
-      hora_sesion: fechaHoraISO as any,
+      fecha_sesion, // YYYY-MM-DD
+      hora_sesion,  // HH:mm
       estado: "reprogramada",
     });
   }

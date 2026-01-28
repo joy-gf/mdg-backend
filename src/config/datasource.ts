@@ -21,8 +21,9 @@ export const AppDataSource = new DataSource({
 //   database: process.env.DB_NAME,
   url: process.env.DATABASE_URL,
 
-  synchronize: true,
+  synchronize: false,
   logging: true,
+  migrationsRun: true,
   entities: [
     Consultorio,
     Paciente,

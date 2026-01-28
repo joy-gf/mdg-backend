@@ -26,11 +26,11 @@ export class Cita {
   @JoinColumn({ name: "consultorioId", referencedColumnName: "id" })
   consultorio!: Consultorio | null;
 
-  @Column({ type: "timestamp" })
-  fecha_sesion!: Date;
+  @Column({ type: "date" })
+  fecha_sesion!: string; // Formato: YYYY-MM-DD
 
-  @Column({ type: "timestamp" })
-  hora_sesion!: Date;
+  @Column({ type: "time" })
+  hora_sesion!: string; // Formato: HH:mm:ss
 
   @Column({ type: "int" })
   duracion_minutos!: number;
