@@ -90,17 +90,22 @@ export class CitasService {
     inicio: Date,
     fin: Date
   ) {
+    const fechaInicio = inicio.toISOString().split('T')[0]; // YYYY-MM-DD
+    const horaInicio = inicio.toTimeString().slice(0, 8); // HH:mm:ss
+    const horaFin = fin.toTimeString().slice(0, 8); // HH:mm:ss
+
     const qb = this.repo.createQueryBuilder("c");
 
     const conflicto = await qb
         .where("c.estado = 'activa'")
+        .andWhere("c.fecha_sesion = :fecha", { fecha: fechaInicio })
         .andWhere(
-        "(c.fecha_sesion < :fin AND c.hora_sesion + (c.duracion_minutos || ' minutes')::interval > :inicio)",
-        { inicio, fin }
+          "(c.hora_sesion < :horaFin AND (c.hora_sesion + (c.duracion_minutos || ' minutes')::interval) > :horaInicio)",
+          { horaInicio, horaFin }
         )
         .andWhere(
-        "(c.consultorioId = :consultorioId OR c.psicologoId = :psicologoId)",
-        { consultorioId, psicologoId }
+          "(c.consultorioId = :consultorioId OR c.psicologoId = :psicologoId)",
+          { consultorioId, psicologoId }
         )
         .getOne();
 
