@@ -68,20 +68,70 @@ export class CitasService {
     return this.repo.save(cita);
   }
 
-  static async cancelar(id: string) {
-    await this.repo.update(id, { estado: "cancelada" });
+  static async update(
+    id: string,
+    data: {
+      fecha_sesion?: string;
+      hora_sesion?: string;
+      duracion_minutos?: number;
+      tipo_cita?: string;
+      consultorioId?: string | null;
+      direccion_cita?: string | null;
+      link_cita?: string | null;
+    }
+  ) {
+    const cita = await this.repo.findOne({
+      where: { id },
+      relations: ["psicologo", "consultorio"],
+    });
+
+    if (!cita) {
+      throw new Error("Cita no encontrada");
+    }
+
+    if (data.fecha_sesion || data.hora_sesion || data.consultorioId !== undefined) {
+      const fechaHoraISO = `${data.fecha_sesion || cita.fecha_sesion}T${data.hora_sesion || cita.hora_sesion}:00`;
+      const inicio = new Date(fechaHoraISO);
+      const duracion = data.duracion_minutos || cita.duracion_minutos;
+      const fin = new Date(inicio.getTime() + duracion * 60000);
+
+      const consultorioId = data.consultorioId !== undefined
+        ? data.consultorioId
+        : cita.consultorio?.id || "";
+
+      if (consultorioId) {
+        await this.validarDisponibilidad(
+          consultorioId,
+          cita.psicologo.id,
+          inicio,
+          fin
+        );
+      }
+    }
+
+    const updateData: any = {
+      estado: "reprogramada",
+    };
+
+    if (data.fecha_sesion !== undefined) updateData.fecha_sesion = data.fecha_sesion;
+    if (data.hora_sesion !== undefined) updateData.hora_sesion = data.hora_sesion;
+    if (data.duracion_minutos !== undefined) updateData.duracion_minutos = data.duracion_minutos;
+    if (data.tipo_cita !== undefined) updateData.tipo_cita = data.tipo_cita;
+    if (data.consultorioId !== undefined) {
+      updateData.consultorio = data.consultorioId ? ({ id: data.consultorioId } as Consultorio) : null;
+    }
+    if (data.direccion_cita !== undefined) updateData.direccion_cita = data.direccion_cita;
+    if (data.link_cita !== undefined) updateData.link_cita = data.link_cita;
+
+    await this.repo.update(id, updateData);
+    return this.repo.findOne({
+      where: { id },
+      relations: ["paciente", "psicologo", "consultorio"],
+    });
   }
 
-  static async reprogramar(
-    id: string,
-    fecha_sesion: string,
-    hora_sesion: string
-  ) {
-    await this.repo.update(id, {
-      fecha_sesion, // YYYY-MM-DD
-      hora_sesion,  // HH:mm
-      estado: "reprogramada",
-    });
+  static async cancelar(id: string) {
+    await this.repo.update(id, { estado: "cancelada" });
   }
 
   static async validarDisponibilidad(

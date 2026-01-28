@@ -24,14 +24,13 @@ export class CitasController {
     res.status(201).json(data);
   }
 
-  static async cancelar(req: Request, res: Response) {
-    await CitasService.cancelar(req.params.id);
-    res.json({ success: true });
+  static async update(req: Request, res: Response) {
+    const data = await CitasService.update(req.params.id, req.body);
+    res.json(data);
   }
 
-  static async reprogramar(req: Request, res: Response) {
-    const { fecha_sesion, hora_sesion } = req.body;
-    await CitasService.reprogramar(req.params.id, fecha_sesion, hora_sesion);
+  static async cancelar(req: Request, res: Response) {
+    await CitasService.cancelar(req.params.id);
     res.json({ success: true });
   }
 }
