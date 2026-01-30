@@ -281,4 +281,33 @@ export class AnalisisSentimientoService {
       insights,
     };
   }
+
+  static async updateNotaValidacion(
+    analisisId: string,
+    nota: string | null
+  ): Promise<AnalisisSentimiento | null> {
+    try {
+      const analisis = await analisisRepo.findOne({
+        where: { id: analisisId },
+      });
+
+      if (!analisis) {
+        throw new Error("Análisis no encontrado");
+      }
+
+      analisis.nota_validacion_psicologo = nota;
+      await analisisRepo.save(analisis);
+
+      return analisis;
+    } catch (error: any) {
+      console.error("Error actualizando nota de validación:", error.message);
+      throw error;
+    }
+  }
+
+  static async getAnalisisByDiarioId(diarioId: string): Promise<AnalisisSentimiento | null> {
+    return await analisisRepo.findOne({
+      where: { diario_emocional_id: diarioId },
+    });
+  }
 }

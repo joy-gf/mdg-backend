@@ -63,6 +63,9 @@ export class AnalisisSentimiento {
   @Column({ type: "varchar", length: 255, nullable: true })
   modelo_usado!: string | null;
 
+  @Column({ type: "text", nullable: true })
+  nota_validacion_psicologo!: string | null;
+
   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
   created_at!: Date;
 }

@@ -105,4 +105,59 @@ export class AnalisisSentimientoController {
       });
     }
   }
+
+  /**
+   * PUT /api/analisis/:analisisId/nota-validacion
+   * Actualiza la nota de validación del psicólogo
+   */
+  static async updateNotaValidacion(req: Request, res: Response) {
+    try {
+      const { analisisId } = req.params;
+      const { nota } = req.body;
+
+      const analisis = await AnalisisSentimientoService.updateNotaValidacion(
+        analisisId,
+        nota
+      );
+
+      res.json({
+        success: true,
+        message: "Nota de validación actualizada",
+        analisis,
+      });
+    } catch (error: any) {
+      console.error("Error actualizando nota de validación:", error);
+      res.status(500).json({
+        error: "Error al actualizar nota",
+        message: error.message,
+      });
+    }
+  }
+
+  /**
+   * GET /api/analisis/diario/:diarioId
+   * Obtiene el análisis de una entrada específica de diario
+   */
+  static async getAnalisisByDiarioId(req: Request, res: Response) {
+    try {
+      const { diarioId } = req.params;
+
+      const analisis = await AnalisisSentimientoService.getAnalisisByDiarioId(diarioId);
+
+      if (!analisis) {
+        return res.status(404).json({
+          error: "Análisis no encontrado",
+          message: "No existe análisis para esta entrada de diario",
+        });
+      }
+
+      res.json(analisis);
+    } catch (error: any) {
+      console.error("Error obteniendo análisis por diario ID:", error);
+      res.status(500).json({
+        error: "Error al obtener análisis",
+        message: error.message,
+      });
+    }
+  }
 }

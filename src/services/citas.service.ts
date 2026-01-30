@@ -29,7 +29,7 @@ export class CitasService {
   }
 
   static async create(data: {
-    pacienteId: string;
+    pacienteId?: string;
     psicologoId: string;
     consultorioId?: string;
     fecha_sesion: string;
@@ -38,7 +38,12 @@ export class CitasService {
     tipo_cita: string;
     direccion_cita?: string;
     link_cita?: string;
+    notas_cita?: string;
   }) {
+
+   if (!data.pacienteId && !data.notas_cita) {
+      throw new Error("Debe proporcionar un pacienteId o notas_cita para identificar al paciente");
+    }
 
     const fechaHoraISO = `${data.fecha_sesion}T${data.hora_sesion}:00`;
     const inicio = new Date(fechaHoraISO);
@@ -52,7 +57,7 @@ export class CitasService {
     );
 
     const cita = this.repo.create({
-      paciente: { id: data.pacienteId } as Paciente,
+      paciente: data.pacienteId ? ({ id: data.pacienteId } as Paciente) : null,
       psicologo: { id: data.psicologoId } as Psicologo,
       consultorio: data.consultorioId
         ? ({ id: data.consultorioId } as Consultorio)
@@ -63,6 +68,7 @@ export class CitasService {
       tipo_cita: data.tipo_cita,
       direccion_cita: data.direccion_cita,
       link_cita: data.link_cita,
+      notas_cita: data.notas_cita || null,
     });
 
     return this.repo.save(cita);
@@ -78,6 +84,7 @@ export class CitasService {
       consultorioId?: string | null;
       direccion_cita?: string | null;
       link_cita?: string | null;
+      notas_cita?: string | null;
     }
   ) {
     const cita = await this.repo.findOne({
@@ -122,6 +129,7 @@ export class CitasService {
     }
     if (data.direccion_cita !== undefined) updateData.direccion_cita = data.direccion_cita;
     if (data.link_cita !== undefined) updateData.link_cita = data.link_cita;
+    if (data.notas_cita !== undefined) updateData.notas_cita = data.notas_cita;
 
     await this.repo.update(id, updateData);
     return this.repo.findOne({

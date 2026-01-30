@@ -14,9 +14,9 @@ export class Cita {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 
-  @ManyToOne(() => Paciente, { nullable: false })
+  @ManyToOne(() => Paciente, { nullable: true })
   @JoinColumn({ name: "pacienteId", referencedColumnName: "id" })
-  paciente!: Paciente;
+  paciente!: Paciente | null;
 
   @ManyToOne(() => Psicologo, { nullable: false })
   @JoinColumn({ name: "psicologoId", referencedColumnName: "id" })
@@ -46,4 +46,7 @@ export class Cita {
 
   @Column({ length: 20, default: "activa" })
   estado!: "activa" | "cancelada" | "reprogramada" | "finalizada";
+
+  @Column({ type: "text", nullable: true })
+  notas_cita!: string | null;
 }
