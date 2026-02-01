@@ -1,4 +1,5 @@
 import "reflect-metadata";
+import 'dotenv/config';
 import { DataSource } from "typeorm";
 import { Consultorio } from "../entities/Consultorio.entity";
 import { Paciente } from "../entities/Paciente.entity";
