@@ -4,14 +4,14 @@ import { PsicologoResumenService } from "../services/psicologoResumen.service";
 export class PsicologoResumenController {
   /**
    * Obtener resumen de pacientes de un psicólogo
-   * GET /api/psicologos/:psicologoId/resumen-pacientes
+   * GET /api/psicologos/:id/resumen-pacientes
    */
   static async getResumenPacientes(
     req: Request,
     res: Response
   ): Promise<Response> {
     try {
-      const { psicologoId } = req.params;
+      const psicologoId = req.params.id;
 
       if (!psicologoId) {
         return res.status(400).json({
@@ -27,6 +27,7 @@ export class PsicologoResumenController {
       console.error("Error en getResumenPacientes:", error);
       return res.status(500).json({
         message: "Error al obtener resumen de pacientes",
+        error: (error as Error).message,
       });
     }
   }

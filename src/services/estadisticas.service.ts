@@ -11,37 +11,31 @@ export class EstadisticasService {
     try {
       const fechaLimite = new Date();
       fechaLimite.setDate(fechaLimite.getDate() - periodoDias);
+      const fechaLimiteStr = fechaLimite.toISOString().split('T')[0];
 
-      const estadisticas = await this.psicologoRepository
-        .createQueryBuilder("psicologo")
-        .select("psicologo.id", "id")
-        .addSelect("psicologo.nombres", "nombres")
-        .addSelect("psicologo.apellidos", "apellidos")
-        .addSelect(
-          `COUNT(DISTINCT CASE WHEN "tratamiento"."activo" = true THEN "tratamiento"."pacienteId" END)`,
-          "pacientes_activos"
-        )
-        .addSelect(
-          `COUNT(DISTINCT CASE WHEN "sesion"."fecha_sesion" >= :fechaLimite THEN "sesion"."id" END)`,
-          "total_sesiones"
-        )
-        .leftJoin("historial_tratamiento", "tratamiento", '"tratamiento"."psicologoId" = "psicologo"."id"')
-        .leftJoin("historial_sesion", "sesion", '"sesion"."tratamientoId" = "tratamiento"."id"')
-        .where("psicologo.activo = :activo", { activo: true })
-        .setParameter("fechaLimite", fechaLimite.toISOString().split('T')[0])
-        .groupBy("psicologo.id")
-        .addGroupBy("psicologo.nombres")
-        .addGroupBy("psicologo.apellidos")
-        .orderBy("psicologo.apellidos", "ASC")
-        .addOrderBy("psicologo.nombres", "ASC")
-        .getRawMany();
+      const query = `
+        SELECT
+          p.id,
+          p.nombres,
+          p.apellidos,
+          COUNT(DISTINCT CASE WHEN t.activo = true THEN t."pacienteId" END)::integer AS pacientes_activos,
+          COUNT(DISTINCT CASE WHEN s.fecha_sesion >= $1 THEN s.id END)::integer AS total_sesiones
+        FROM psicologos p
+        LEFT JOIN historial_tratamiento t ON t."psicologoId" = p.id
+        LEFT JOIN historial_sesion s ON s."tratamientoId" = t.id
+        WHERE p.activo = true
+        GROUP BY p.id, p.nombres, p.apellidos
+        ORDER BY p.apellidos ASC, p.nombres ASC
+      `;
 
-      return estadisticas.map((est) => ({
+      const estadisticas = await AppDataSource.query(query, [fechaLimiteStr]);
+
+      return estadisticas.map((est: any) => ({
         id: est.id,
         nombres: est.nombres,
         apellidos: est.apellidos,
-        pacientes_activos: parseInt(est.pacientes_activos) || 0,
-        total_sesiones: parseInt(est.total_sesiones) || 0,
+        pacientes_activos: est.pacientes_activos || 0,
+        total_sesiones: est.total_sesiones || 0,
       }));
     } catch (error) {
       console.error("Error al obtener estadísticas de psicólogos:", error);
