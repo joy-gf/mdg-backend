@@ -13,6 +13,10 @@ export class PsicologoResumenService {
     psicologoId: string
   ): Promise<ResumenPacientePsicologo[]> {
     try {
+      console.log("=== getResumenPacientes ===");
+      console.log("psicologoId recibido:", psicologoId);
+      console.log("tipo:", typeof psicologoId);
+
       const query = `
         SELECT
           p.id AS paciente_id,
@@ -37,7 +41,9 @@ export class PsicologoResumenService {
           p.nombres ASC
       `;
 
+      console.log("Ejecutando query con psicologoId:", psicologoId);
       const result = await AppDataSource.query(query, [psicologoId]);
+      console.log("Resultados encontrados:", result.length);
 
       return result.map((row: any) => ({
         paciente_id: row.paciente_id,
