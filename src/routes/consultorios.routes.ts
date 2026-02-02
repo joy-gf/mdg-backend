@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { ConsultoriosController } from "../controllers/consultorios.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.get("/", ConsultoriosController.getAll);
-router.post("/", ConsultoriosController.create);
-router.put("/:id", ConsultoriosController.update);
-router.delete("/:id", ConsultoriosController.delete);
+router.get("/", authMiddleware, ConsultoriosController.getAll);
+router.post("/", authMiddleware, ConsultoriosController.create);
+router.put("/:id", authMiddleware, ConsultoriosController.update);
+router.delete("/:id", authMiddleware, ConsultoriosController.delete);
 
 export default router;

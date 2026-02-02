@@ -1,13 +1,14 @@
 import { Router } from "express";
 import { AntecedentesPacienteController } from "../controllers/antecedentesPaciente.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.get("/", AntecedentesPacienteController.getAll);
-router.get("/:id", AntecedentesPacienteController.getById);
-router.get("/paciente/:pacienteId", AntecedentesPacienteController.getByPacienteId);
-router.post("/", AntecedentesPacienteController.create);
-router.put("/:id", AntecedentesPacienteController.update);
-router.delete("/:id", AntecedentesPacienteController.delete);
+router.get("/", authMiddleware, AntecedentesPacienteController.getAll);
+router.get("/:id", authMiddleware, AntecedentesPacienteController.getById);
+router.get("/paciente/:pacienteId", authMiddleware, AntecedentesPacienteController.getByPacienteId);
+router.post("/", authMiddleware, AntecedentesPacienteController.create);
+router.put("/:id", authMiddleware, AntecedentesPacienteController.update);
+router.delete("/:id", authMiddleware, AntecedentesPacienteController.delete);
 
 export default router;

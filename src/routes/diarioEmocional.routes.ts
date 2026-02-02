@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { DiarioEmocionalController } from "../controllers/diarioEmocional.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
@@ -22,17 +23,17 @@ const router = Router();
  */
 
 // Create new diary entry
-router.post("/", DiarioEmocionalController.create);
+router.post("/", authMiddleware, DiarioEmocionalController.create);
 
 // Get all entries for a patient (with optional date filters)
-router.get("/paciente/:pacienteId", DiarioEmocionalController.getByPaciente);
+router.get("/paciente/:pacienteId", authMiddleware, DiarioEmocionalController.getByPaciente);
 
 // Get entry count for a patient
-router.get("/paciente/:pacienteId/count", DiarioEmocionalController.getCount);
+router.get("/paciente/:pacienteId/count", authMiddleware, DiarioEmocionalController.getCount);
 
 // Get single entry by ID (requires paciente_id query param for security)
-router.get("/:id", DiarioEmocionalController.getById);
+router.get("/:id", authMiddleware, DiarioEmocionalController.getById);
 
-router.put("/:id", DiarioEmocionalController.update);
+router.put("/:id", authMiddleware, DiarioEmocionalController.update);
 
 export default router;

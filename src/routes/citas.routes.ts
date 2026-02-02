@@ -1,16 +1,17 @@
 import { Router } from "express";
 import { CitasController } from "../controllers/citas.controller";
+import { authMiddleware } from "../middleware/auth.middleware";
 
 const router = Router();
 
-router.get("/", CitasController.getAll);
-router.get("/paciente/:pacienteId", CitasController.getByPaciente);
-router.get("/psicologo/:psicologoId", CitasController.getByPsicologo);
-router.post("/", CitasController.create);
-router.post("/solicitar", CitasController.solicitar);
-router.put("/:id", CitasController.update);
-router.put("/:id/cancelar", CitasController.cancelar);
-router.put("/:id/confirmar", CitasController.confirmar);
-router.put("/:id/rechazar", CitasController.rechazar);
+router.get("/", authMiddleware, CitasController.getAll);
+router.get("/paciente/:pacienteId", authMiddleware, CitasController.getByPaciente);
+router.get("/psicologo/:psicologoId", authMiddleware, CitasController.getByPsicologo);
+router.post("/", authMiddleware, CitasController.create);
+router.post("/solicitar", authMiddleware, CitasController.solicitar);
+router.put("/:id", authMiddleware, CitasController.update);
+router.put("/:id/cancelar", authMiddleware, CitasController.cancelar);
+router.put("/:id/confirmar", authMiddleware, CitasController.confirmar);
+router.put("/:id/rechazar", authMiddleware, CitasController.rechazar);
 
 export default router;
