@@ -9,6 +9,11 @@ import { Paciente } from "./Paciente.entity";
 import { Psicologo } from "./Psicologo.entity";
 import { Consultorio } from "./Consultorio.entity";
 
+export enum SolicitadaPor {
+  PACIENTE = "paciente",
+  PSICOLOGO = "psicologo",
+}
+
 @Entity("citas")
 export class Cita {
   @PrimaryGeneratedColumn("uuid")
@@ -47,8 +52,13 @@ export class Cita {
   @Column({ length: 20, default: "activa" })
   estado!: "pendiente" | "activa" | "cancelada" | "rechazada" | "reprogramada" | "finalizada";
 
-  @Column({ length: 20, nullable: true })
-  solicitada_por!: "paciente" | "psicologo" | null;
+  @Column({
+    type: "enum",
+    enum: SolicitadaPor,
+    nullable: true,
+  })
+  solicitada_por?: SolicitadaPor | null;
+
 
   @Column({ type: "timestamp", nullable: true })
   fecha_confirmacion!: Date | null;

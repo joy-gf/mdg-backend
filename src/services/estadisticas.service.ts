@@ -1,5 +1,5 @@
-import { AppDataSource } from "../data-source";
-import { Psicologo } from "../entities/Psicologo";
+import { AppDataSource } from "../config/datasource";
+import { Psicologo } from "../entities/Psicologo.entity";
 import { PsicologoEstadistica } from "../types/estadisticas.types";
 
 export class EstadisticasService {

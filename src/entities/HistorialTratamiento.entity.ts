@@ -41,7 +41,7 @@ export class HistorialTratamiento {
   @Column({ type: "text", nullable: true })
   diagnostico_clinico_encrypted!: string | null;
 
-  @Column({ length: 80, nullable: true })
+  @Column({ type: "varchar", length: 80, nullable: true })
   tipo_intervencion!: string | null;
 
   @Column({ type: "text", nullable: true })

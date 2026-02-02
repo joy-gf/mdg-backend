@@ -1,6 +1,7 @@
 import { MigrationInterface, QueryRunner, TableColumn } from "typeorm";
 
-export class AddFinalizacionToHistorialSesion implements MigrationInterface {
+export class AddFinalizacionToHistorialSesion1760059260000
+ implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.addColumn(
       "historial_sesion",
