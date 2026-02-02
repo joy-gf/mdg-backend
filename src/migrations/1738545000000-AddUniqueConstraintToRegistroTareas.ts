@@ -23,6 +23,8 @@ export class AddUniqueConstraintToRegistroTareas1738545000000
           rt.paciente_id,
           rt.tipo_tarea,
           DATE(rt.fecha) as fecha_date,
+          rt.veces_completado,
+          rt.tiempo_total_segundos,
           ROW_NUMBER() OVER (
             PARTITION BY rt.paciente_id, rt.tipo_tarea, DATE(rt.fecha)
             ORDER BY rt.created_at ASC
