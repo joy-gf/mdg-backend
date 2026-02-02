@@ -7,7 +7,7 @@ export type TipoTareaTerapeutica =
 export interface RegistroTareaInput {
   paciente_id: string;
   tipo_tarea: TipoTareaTerapeutica;
-  fecha: Date;
+  fecha: string; // YYYY-MM-DD format to avoid timezone issues
   actividades_realizadas?: string[];
   veces_completado?: number;
   tiempo_total_segundos?: number;

@@ -25,11 +25,7 @@ export class RegistroTareasController {
    */
   static async registrarTarea(req: Request, res: Response) {
     try {
-      const { fecha, ...rest } = req.body;
-      const data = {
-        ...rest,
-        fecha: new Date(fecha || new Date()),
-      };
+      const data = req.body;
 
       const registro = await RegistroTareasService.registrarTarea(data);
 
@@ -106,7 +102,7 @@ export class RegistroTareasController {
       const registro = await RegistroTareasService.getByPacienteAndFecha(
         pacienteId,
         tipo_tarea,
-        new Date(fecha)
+        fecha // Pass as string to avoid UTC conversion
       );
 
       if (!registro) {

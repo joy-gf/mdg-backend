@@ -37,13 +37,17 @@ export class RegistroTareasService {
       };
     }
 
-    // Buscar si ya existe un registro para este día
-    const fechaStr = data.fecha.toISOString().split("T")[0];
+    // Parse date string to Date object in local timezone (avoid UTC conversion)
+    // Expected format: "YYYY-MM-DD"
+    const fechaStr = data.fecha; // Already in "YYYY-MM-DD" format
+    const [year, month, day] = fechaStr.split('-').map(Number);
+    const fechaDate = new Date(year, month - 1, day); // Month is 0-indexed
+
     const existingRegistro = await this.repo.findOne({
       where: {
         paciente_id: data.paciente_id,
         tipo_tarea: data.tipo_tarea,
-        fecha: new Date(fechaStr) as any,
+        fecha: fechaDate as any,
       },
     });
 
@@ -71,7 +75,7 @@ export class RegistroTareasService {
       const nuevoRegistro = this.repo.create({
         paciente_id: data.paciente_id,
         tipo_tarea: data.tipo_tarea,
-        fecha: new Date(fechaStr),
+        fecha: fechaDate,
         actividades_realizadas: data.actividades_realizadas || null,
         veces_completado: data.veces_completado || (data.tipo_tarea === "registro_actividades" ? 0 : 1),
         tiempo_total_segundos: data.tiempo_total_segundos || 0,
@@ -115,15 +119,23 @@ export class RegistroTareasService {
   static async getByPacienteAndFecha(
     paciente_id: string,
     tipo_tarea: TipoTareaTerapeutica,
-    fecha: Date
+    fecha: Date | string
   ): Promise<RegistroTareaOutput | null> {
-    const fechaStr = fecha.toISOString().split("T")[0];
+    // Parse date to local timezone (avoid UTC conversion)
+    let fechaDate: Date;
+    if (typeof fecha === 'string') {
+      const [year, month, day] = fecha.split('-').map(Number);
+      fechaDate = new Date(year, month - 1, day);
+    } else {
+      // If it's already a Date, extract components to avoid timezone issues
+      fechaDate = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+    }
 
     return this.repo.findOne({
       where: {
         paciente_id,
         tipo_tarea,
-        fecha: new Date(fechaStr) as any,
+        fecha: fechaDate as any,
       },
     });
   }
