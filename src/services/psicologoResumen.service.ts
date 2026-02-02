@@ -23,12 +23,12 @@ export class PsicologoResumenService {
           COUNT(DISTINCT hs.id) FILTER (WHERE hs.finalizada = true) AS sesiones_finalizadas,
           BOOL_OR(ht.activo) AS tratamiento_activo
         FROM pacientes p
-        INNER JOIN historial_tratamiento ht ON ht.paciente_id = p.id
-        LEFT JOIN historial_sesion hs ON hs.tratamiento_id = ht.id
-        LEFT JOIN citas c ON c.paciente_id = p.id
-          AND c.psicologo_id = $1
+        INNER JOIN historial_tratamiento ht ON ht."pacienteId" = p.id
+        LEFT JOIN historial_sesion hs ON hs."tratamientoId" = ht.id
+        LEFT JOIN citas c ON c."pacienteId" = p.id
+          AND c."psicologoId" = $1
           AND c.estado != 'cancelada'
-        WHERE ht.psicologo_id = $1
+        WHERE ht."psicologoId" = $1
         GROUP BY p.id, p.nombres, p.apellidos
         ORDER BY
           tratamiento_activo DESC,

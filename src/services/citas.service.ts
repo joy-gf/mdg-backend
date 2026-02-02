@@ -46,8 +46,19 @@ export class CitasService {
       throw new Error("Debe proporcionar un pacienteId o notas_cita para identificar al paciente");
     }
 
-    const fechaHoraISO = `${data.fecha_sesion}T${data.hora_sesion}:00`;
+    // Asegurar formato correcto de la hora
+    let horaFormateada = data.hora_sesion;
+    if (horaFormateada && horaFormateada.split(':').length === 2) {
+      horaFormateada = `${horaFormateada}:00`;
+    }
+
+    const fechaHoraISO = `${data.fecha_sesion}T${horaFormateada}`;
     const inicio = new Date(fechaHoraISO);
+
+    if (isNaN(inicio.getTime())) {
+      throw new Error(`Fecha/hora inválida: ${fechaHoraISO}`);
+    }
+
     const fin = new Date(inicio.getTime() + data.duracion_minutos * 60000);
 
     await this.validarDisponibilidad(
@@ -88,8 +99,19 @@ export class CitasService {
     notas_cita?: string;
   }) {
     // Validar que el paciente no pase consultorio ni link (lo asigna el psicólogo al confirmar)
-    const fechaHoraISO = `${data.fecha_sesion}T${data.hora_sesion}:00`;
+    // Asegurar formato correcto de la hora
+    let horaFormateada = data.hora_sesion;
+    if (horaFormateada && horaFormateada.split(':').length === 2) {
+      horaFormateada = `${horaFormateada}:00`;
+    }
+
+    const fechaHoraISO = `${data.fecha_sesion}T${horaFormateada}`;
     const inicio = new Date(fechaHoraISO);
+
+    if (isNaN(inicio.getTime())) {
+      throw new Error(`Fecha/hora inválida: ${fechaHoraISO}`);
+    }
+
     const fin = new Date(inicio.getTime() + data.duracion_minutos * 60000);
 
     // Validar disponibilidad del psicólogo (no consultorio aún)
@@ -149,8 +171,26 @@ export class CitasService {
     }
 
     // Validar disponibilidad con el consultorio asignado
-    const fechaHoraISO = `${cita.fecha_sesion}T${cita.hora_sesion}:00`;
+    console.log('Datos de cita para validación:', {
+      fecha_sesion: cita.fecha_sesion,
+      hora_sesion: cita.hora_sesion,
+      duracion_minutos: cita.duracion_minutos
+    });
+
+    // Asegurar formato correcto de la hora (HH:mm o HH:mm:ss)
+    let horaFormateada = cita.hora_sesion;
+    if (horaFormateada && horaFormateada.split(':').length === 2) {
+      horaFormateada = `${horaFormateada}:00`;
+    }
+
+    const fechaHoraISO = `${cita.fecha_sesion}T${horaFormateada}`;
+    console.log('fechaHoraISO construido:', fechaHoraISO);
+
     const inicio = new Date(fechaHoraISO);
+    if (isNaN(inicio.getTime())) {
+      throw new Error(`Fecha/hora inválida: ${fechaHoraISO}`);
+    }
+
     const fin = new Date(inicio.getTime() + cita.duracion_minutos * 60000);
 
     if (data.consultorioId) {
@@ -236,8 +276,19 @@ export class CitasService {
     }
 
     if (data.fecha_sesion || data.hora_sesion || data.consultorioId !== undefined) {
-      const fechaHoraISO = `${data.fecha_sesion || cita.fecha_sesion}T${data.hora_sesion || cita.hora_sesion}:00`;
+      // Asegurar formato correcto de la hora
+      let horaFinal = data.hora_sesion || cita.hora_sesion;
+      if (horaFinal && horaFinal.split(':').length === 2) {
+        horaFinal = `${horaFinal}:00`;
+      }
+
+      const fechaHoraISO = `${data.fecha_sesion || cita.fecha_sesion}T${horaFinal}`;
       const inicio = new Date(fechaHoraISO);
+
+      if (isNaN(inicio.getTime())) {
+        throw new Error(`Fecha/hora inválida: ${fechaHoraISO}`);
+      }
+
       const duracion = data.duracion_minutos || cita.duracion_minutos;
       const fin = new Date(inicio.getTime() + duracion * 60000);
 
@@ -291,11 +342,11 @@ export class CitasService {
     const horaInicio = inicio.toTimeString().slice(0, 8); // HH:mm:ss
     const horaFin = fin.toTimeString().slice(0, 8); // HH:mm:ss
 
-    // Verificar conflicto con consultorio (estados activa y pendiente)
+    // Verificar conflicto con consultorio (solo citas confirmadas y reprogramadas)
     if (consultorioId) {
       const conflictoConsultorio = await this.repo
         .createQueryBuilder("c")
-        .where("c.estado IN ('activa', 'pendiente')")
+        .where("c.estado IN ('activa', 'reprogramada')")
         .andWhere("c.fecha_sesion = :fecha", { fecha: fechaInicio })
         .andWhere(
           "(c.hora_sesion < :horaFin AND (c.hora_sesion + (c.duracion_minutos || ' minutes')::interval) > :horaInicio)",
@@ -312,10 +363,10 @@ export class CitasService {
       }
     }
 
-    // Verificar conflicto con psicólogo (estados activa y pendiente)
+    // Verificar conflicto con psicólogo (solo citas confirmadas y reprogramadas)
     const conflictoPsicologo = await this.repo
       .createQueryBuilder("c")
-      .where("c.estado IN ('activa', 'pendiente')")
+      .where("c.estado IN ('activa', 'reprogramada')")
       .andWhere("c.fecha_sesion = :fecha", { fecha: fechaInicio })
       .andWhere(
         "(c.hora_sesion < :horaFin AND (c.hora_sesion + (c.duracion_minutos || ' minutes')::interval) > :horaInicio)",
@@ -341,10 +392,10 @@ export class CitasService {
     const horaInicio = inicio.toTimeString().slice(0, 8); // HH:mm:ss
     const horaFin = fin.toTimeString().slice(0, 8); // HH:mm:ss
 
-    // Solo verificar conflicto con psicólogo (para solicitudes de pacientes)
+    // Solo verificar conflicto con psicólogo (solo citas confirmadas y reprogramadas)
     const conflictoPsicologo = await this.repo
       .createQueryBuilder("c")
-      .where("c.estado IN ('activa', 'pendiente')")
+      .where("c.estado IN ('activa', 'reprogramada')")
       .andWhere("c.fecha_sesion = :fecha", { fecha: fechaInicio })
       .andWhere(
         "(c.hora_sesion < :horaFin AND (c.hora_sesion + (c.duracion_minutos || ' minutes')::interval) > :horaInicio)",

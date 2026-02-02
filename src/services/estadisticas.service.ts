@@ -18,17 +18,17 @@ export class EstadisticasService {
         .addSelect("psicologo.nombres", "nombres")
         .addSelect("psicologo.apellidos", "apellidos")
         .addSelect(
-          `COUNT(DISTINCT CASE WHEN tratamiento.activo = true THEN tratamiento.paciente_id END)`,
+          `COUNT(DISTINCT CASE WHEN "tratamiento"."activo" = true THEN "tratamiento"."pacienteId" END)`,
           "pacientes_activos"
         )
         .addSelect(
-          `COUNT(DISTINCT CASE WHEN sesion.fecha_sesion >= :fechaLimite THEN sesion.id END)`,
+          `COUNT(DISTINCT CASE WHEN "sesion"."fecha_sesion" >= :fechaLimite THEN "sesion"."id" END)`,
           "total_sesiones"
         )
-        .leftJoin("psicologo.tratamientos", "tratamiento")
-        .leftJoin("tratamiento.sesiones", "sesion")
+        .leftJoin("historial_tratamiento", "tratamiento", '"tratamiento"."psicologoId" = "psicologo"."id"')
+        .leftJoin("historial_sesion", "sesion", '"sesion"."tratamientoId" = "tratamiento"."id"')
         .where("psicologo.activo = :activo", { activo: true })
-        .setParameter("fechaLimite", fechaLimite)
+        .setParameter("fechaLimite", fechaLimite.toISOString().split('T')[0])
         .groupBy("psicologo.id")
         .addGroupBy("psicologo.nombres")
         .addGroupBy("psicologo.apellidos")
