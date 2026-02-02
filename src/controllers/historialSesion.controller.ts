@@ -66,4 +66,36 @@ export class HistorialSesionController {
       });
     }
   }
+
+  static async finalizar(req: Request, res: Response) {
+    try {
+      const { tratamientoId, sesionId } = req.params;
+      const sesion = await HistorialSesionService.finalizar(
+        sesionId,
+        tratamientoId
+      );
+      res.json(sesion);
+    } catch (error: any) {
+      console.error("Error finalizando sesion:", error);
+
+      if (error.message === "Sesión no encontrada") {
+        return res.status(404).json({
+          error: "SESION_NO_ENCONTRADA",
+          message: error.message,
+        });
+      }
+
+      if (error.message === "La sesión ya está finalizada") {
+        return res.status(400).json({
+          error: "SESION_YA_FINALIZADA",
+          message: error.message,
+        });
+      }
+
+      res.status(500).json({
+        error: "Error al finalizar sesión",
+        details: error.message,
+      });
+    }
+  }
 }

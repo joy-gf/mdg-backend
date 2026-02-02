@@ -128,4 +128,35 @@ export class HistorialSesionService {
 
     return result ? decryptSesionFields(result) : null;
   }
+
+  static async finalizar(
+    sesionId: string,
+    tratamientoId: string
+  ) {
+    const sesion = await repo.findOne({
+      where: {
+        id: sesionId,
+        tratamiento: { id: tratamientoId },
+      },
+    });
+
+    if (!sesion) {
+      throw new Error("Sesión no encontrada");
+    }
+
+    if (sesion.finalizada) {
+      throw new Error("La sesión ya está finalizada");
+    }
+
+    sesion.finalizada = true;
+    sesion.fecha_finalizacion = new Date();
+    await repo.save(sesion);
+
+    const result = await repo.findOne({
+      where: { id: sesionId },
+      relations: ["tratamiento"],
+    });
+
+    return result ? decryptSesionFields(result) : null;
+  }
 }

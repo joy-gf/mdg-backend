@@ -33,20 +33,53 @@ export class UsuarioModel {
     return res.rows[0];
   }
 
-  static async update(id: string, data: UsuarioInput): Promise<Usuario> {
-    const { userName, password } = data;
+  static async update(id: string, data: Partial<UsuarioInput>): Promise<Usuario> {
+    const { userName, password, roleId } = data;
 
-    // Hash the password before storing
-    const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    // Build dynamic UPDATE query based on provided fields
+    const updates: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (userName !== undefined) {
+      updates.push(`user_name = $${paramIndex}`);
+      values.push(userName);
+      paramIndex++;
+    }
+
+    if (password !== undefined && password !== null && password !== '') {
+      // Hash the password before storing (only if provided)
+      const saltRounds = 10;
+      const passwordHash = await bcrypt.hash(password, saltRounds);
+      updates.push(`password_hash = $${paramIndex}`);
+      values.push(passwordHash);
+      paramIndex++;
+    }
+
+    if (roleId !== undefined) {
+      updates.push(`role_id = $${paramIndex}`);
+      values.push(roleId);
+      paramIndex++;
+    }
+
+    if (updates.length === 0) {
+      throw new Error("No fields to update");
+    }
+
+    values.push(id); // Add id as the last parameter
 
     const res = await pool.query(
       `UPDATE usuarios
-       SET user_name = $1, password_hash = $2
-       WHERE id = $3
+       SET ${updates.join(', ')}
+       WHERE id = $${paramIndex}
        RETURNING *`,
-      [userName, passwordHash, id]
+      values
     );
+
+    if (res.rows.length === 0) {
+      throw new Error("Usuario not found");
+    }
+
     return res.rows[0];
   }
 

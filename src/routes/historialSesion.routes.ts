@@ -18,4 +18,9 @@ router.put(
   HistorialSesionController.update
 );
 
+router.put(
+  "/tratamientos/:tratamientoId/sesiones/:sesionId/finalizar",
+  HistorialSesionController.finalizar
+);
+
 export default router;

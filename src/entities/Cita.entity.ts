@@ -45,7 +45,16 @@ export class Cita {
   link_cita!: string;
 
   @Column({ length: 20, default: "activa" })
-  estado!: "activa" | "cancelada" | "reprogramada" | "finalizada";
+  estado!: "pendiente" | "activa" | "cancelada" | "rechazada" | "reprogramada" | "finalizada";
+
+  @Column({ length: 20, nullable: true })
+  solicitada_por!: "paciente" | "psicologo" | null;
+
+  @Column({ type: "timestamp", nullable: true })
+  fecha_confirmacion!: Date | null;
+
+  @Column({ type: "text", nullable: true })
+  motivo_rechazo!: string | null;
 
   @Column({ type: "text", nullable: true })
   notas_cita!: string | null;

@@ -224,12 +224,12 @@ export class AnalisisSentimientoService {
     if (sentimientoPromedio >= 0.3) {
       insights.push({
         type: "positive",
-        text: "El estado emocional general es positivo. Continúa con las actividades que te hacen sentir bien.",
+        text: "El paciente presenta un estado emocional general positivo. Se recomienda reforzar las actividades y estrategias que están contribuyendo a su bienestar.",
       });
     } else if (sentimientoPromedio <= -0.3) {
       insights.push({
         type: "warning",
-        text: "Se detecta un estado emocional negativo predominante. Considera hablar con tu psicólogo sobre esto.",
+        text: "El paciente presenta un estado emocional negativo predominante. Se recomienda explorar los factores desencadenantes y evaluar ajustes en el plan terapéutico.",
       });
     }
 
@@ -244,12 +244,12 @@ export class AnalisisSentimientoService {
       if (promedioReciente > promedioInicial + 0.15) {
         insights.push({
           type: "positive",
-          text: "Tu estado emocional está mejorando con el tiempo. ¡Excelente progreso!",
+          text: "Se observa una tendencia positiva en el estado emocional del paciente. El tratamiento actual parece estar generando resultados favorables.",
         });
       } else if (promedioReciente < promedioInicial - 0.15) {
         insights.push({
           type: "warning",
-          text: "Se observa un declive en tu estado emocional. Es importante hablar sobre esto en la próxima sesión.",
+          text: "Se detecta un declive en el estado emocional del paciente. Se sugiere abordar este cambio en la próxima sesión y considerar intervenciones adicionales.",
         });
       }
     }
@@ -266,7 +266,7 @@ export class AnalisisSentimientoService {
         const esNegativa = ["Ansioso", "Estresado", "Triste", "Molesto", "Frustrado"].includes(emocion);
         insights.push({
           type: esNegativa ? "warning" : "neutral",
-          text: `La emoción "${emocion}" aparece en ${porcentaje.toFixed(0)}% de tus entradas.`,
+          text: `La emoción "${emocion}" aparece en ${porcentaje.toFixed(0)}% de las entradas del paciente, sugiriendo un patrón emocional recurrente que puede requerir atención clínica.`,
         });
       }
     }

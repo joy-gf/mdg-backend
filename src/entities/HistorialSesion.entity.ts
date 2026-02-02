@@ -34,4 +34,11 @@ export class HistorialSesion {
 
   @Column({ type: "text", nullable: true, comment: "Encrypted JSON: {iv, ciphertext}" })
   objetivos_proxima_sesion_encrypted!: string | null;
+
+  /* ESTADO DE FINALIZACIÓN */
+  @Column({ type: "boolean", default: false })
+  finalizada!: boolean;
+
+  @Column({ type: "timestamp", nullable: true })
+  fecha_finalizacion!: Date | null;
 }
