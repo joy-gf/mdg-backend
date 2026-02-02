@@ -113,6 +113,8 @@ export class CitasController {
       const data = await CitasService.confirmar(req.params.id, req.body);
       res.json(data);
     } catch (error: any) {
+      console.error("Error en confirmar cita:", error);
+
       if (error.message === "Cita no encontrada") {
         return res.status(404).json({
           error: "NOT_FOUND",
@@ -143,6 +145,7 @@ export class CitasController {
       res.status(500).json({
         error: "INTERNAL_ERROR",
         message: "Error al confirmar la cita",
+        details: error.message,
       });
     }
   }
