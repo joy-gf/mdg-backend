@@ -4,6 +4,7 @@ import {
   Column,
   OneToMany,
   ManyToOne,
+  JoinColumn,
   CreateDateColumn,
 } from "typeorm";
 import { AntecedentesPaciente } from "./AntecedentesPaciente.entity";
@@ -62,6 +63,7 @@ export class Paciente {
 
   /* RELACIONES */
   @ManyToOne(() => Psicologo, { nullable: true, onDelete: "SET NULL" })
+  @JoinColumn({ name: "psicologo_id" })
   psicologo!: Psicologo | null;
 
   @OneToMany(() => AntecedentesPaciente, (a) => a.paciente)
