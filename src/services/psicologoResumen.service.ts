@@ -25,14 +25,14 @@ export class PsicologoResumenService {
           MAX(c.fecha_sesion) FILTER (WHERE c.fecha_sesion <= CURRENT_DATE) AS fecha_ultima_cita,
           COUNT(DISTINCT hs.id) AS total_sesiones,
           COUNT(DISTINCT hs.id) FILTER (WHERE hs.finalizada = true) AS sesiones_finalizadas,
-          BOOL_OR(ht.activo) AS tratamiento_activo
+          COALESCE(BOOL_OR(ht.activo), false) AS tratamiento_activo
         FROM pacientes p
-        INNER JOIN historial_tratamiento ht ON ht."pacienteId" = p.id
+        LEFT JOIN historial_tratamiento ht ON ht."pacienteId" = p.id
         LEFT JOIN historial_sesion hs ON hs."tratamientoId" = ht.id
         LEFT JOIN citas c ON c."pacienteId" = p.id
           AND c."psicologoId" = $1
           AND c.estado != 'cancelada'
-        WHERE ht."psicologoId" = $1
+        WHERE p.psicologo_id = $1
         GROUP BY p.id, p.nombres, p.apellidos
         ORDER BY
           tratamiento_activo DESC,
