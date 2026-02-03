@@ -16,6 +16,7 @@ import diarioEmocionalRoutes from "./routes/diarioEmocional.routes";
 import analisisSentimientoRoutes from "./routes/analisisSentimiento.routes";
 import estadisticasRoutes from "./routes/estadisticas.routes";
 import registroTareasRoutes from "./routes/registroTareas.routes";
+import mensajesDiariosRoutes from "./routes/mensajesDiarios.routes";
 
 const app = express();
 
@@ -42,6 +43,7 @@ app.use("/api/diario-emocional", diarioEmocionalRoutes);
 app.use("/api/analisis", analisisSentimientoRoutes);
 app.use("/api/estadisticas", estadisticasRoutes);
 app.use("/api/registro-tareas", registroTareasRoutes);
+app.use("/api/mensajes-diarios", mensajesDiariosRoutes);
 
 /* =======================
    Health check
