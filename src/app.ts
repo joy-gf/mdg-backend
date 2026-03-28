@@ -24,7 +24,21 @@ const app = express();
 /* =======================
    Middlewares globales
 ======================= */
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://consultorio-cdp.netlify.app",
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("No permitido por CORS"));
+    }
+  }
+}));
+
 app.use(express.json());
 
 /* =======================

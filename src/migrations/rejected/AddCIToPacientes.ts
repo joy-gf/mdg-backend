@@ -1,4 +1,5 @@
-import { MigrationInterface, QueryRunner, TableColumn } from "typeorm";
+import { TableColumn } from "typeorm";
+import type { MigrationInterface, QueryRunner } from "typeorm";
 
 export class AddCIToPacientes1705000000001 implements MigrationInterface {
   name = "AddCIToPacientes1705000000001";

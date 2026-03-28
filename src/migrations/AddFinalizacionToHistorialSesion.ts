@@ -1,4 +1,5 @@
-import { MigrationInterface, QueryRunner, TableColumn } from "typeorm";
+import { TableColumn } from "typeorm";
+import type { MigrationInterface, QueryRunner } from "typeorm";
 
 export class AddFinalizacionToHistorialSesion1760059260000
  implements MigrationInterface {
