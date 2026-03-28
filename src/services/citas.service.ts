@@ -1,5 +1,6 @@
+import { DeepPartial } from "typeorm";
 import { AppDataSource } from "../config/datasource";
-import { Cita } from "../entities/Cita.entity";
+import { Cita, SolicitadaPor } from "../entities/Cita.entity";
 import { Paciente } from "../entities/Paciente.entity";
 import { Psicologo } from "../entities/Psicologo.entity";
 import { Consultorio } from "../entities/Consultorio.entity";
@@ -68,7 +69,7 @@ export class CitasService {
       fin
     );
 
-    const cita = this.repo.create({
+    const citaData: DeepPartial<Cita> = {
       paciente: data.pacienteId ? ({ id: data.pacienteId } as Paciente) : null,
       psicologo: { id: data.psicologoId } as Psicologo,
       consultorio: data.consultorioId
@@ -81,9 +82,10 @@ export class CitasService {
       direccion_cita: data.direccion_cita,
       link_cita: data.link_cita,
       notas_cita: data.notas_cita || null,
-      solicitada_por: data.solicitada_por || "psicologo",
+      solicitada_por: (data.solicitada_por as SolicitadaPor) || SolicitadaPor.PSICOLOGO,
       estado: "activa",
-    });
+    };
+    const cita = this.repo.create(citaData);
 
     return this.repo.save(cita);
   }
@@ -121,7 +123,7 @@ export class CitasService {
       fin
     );
 
-    const cita = this.repo.create({
+    const solicitudData: DeepPartial<Cita> = {
       paciente: { id: data.pacienteId } as Paciente,
       psicologo: { id: data.psicologoId } as Psicologo,
       consultorio: null,
@@ -129,12 +131,13 @@ export class CitasService {
       hora_sesion: data.hora_sesion,
       duracion_minutos: data.duracion_minutos,
       tipo_cita: data.tipo_cita,
-      direccion_cita: data.direccion_cita || null,
-      link_cita: null,
-      notas_cita: data.notas_cita || null,
-      solicitada_por: "paciente",
+      direccion_cita: data.direccion_cita || undefined,
+      link_cita: undefined,
+      notas_cita: data.notas_cita || undefined,
+      solicitada_por: SolicitadaPor.PACIENTE,
       estado: "pendiente",
-    });
+    };
+    const cita = this.repo.create(solicitudData);
 
     return this.repo.save(cita);
   }

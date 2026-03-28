@@ -39,7 +39,7 @@ router.post("/login", async (req, res) => {
     const JWT_SECRET: Secret = process.env.JWT_SECRET as string;
 
     const token = jwt.sign(payload, JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+      expiresIn: (process.env.JWT_EXPIRES_IN || "7d") as any,
     });
 
     res.json({

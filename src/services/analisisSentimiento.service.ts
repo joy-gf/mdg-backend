@@ -68,7 +68,9 @@ export class AnalisisSentimientoService {
       const analisis = analisisRepo.create({
         diario_emocional_id: diarioId,
         paciente_id: diario.paciente_id,
-        fecha_analisis: diario.fecha_entrada,
+        fecha_analisis: diario.fecha_entrada instanceof Date
+          ? diario.fecha_entrada.toISOString().split("T")[0]
+          : diario.fecha_entrada,
         sentimiento_general: sentimientoAmigable,
         confianza: result.confianza,
         score_positivo: result.score_positivo,

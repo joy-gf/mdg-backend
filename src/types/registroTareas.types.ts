@@ -18,7 +18,7 @@ export interface RegistroTareaOutput {
   id: string;
   paciente_id: string;
   tipo_tarea: TipoTareaTerapeutica;
-  fecha: string;
+  fecha: Date;
   actividades_realizadas: string[] | null;
   veces_completado: number;
   tiempo_total_segundos: number;
