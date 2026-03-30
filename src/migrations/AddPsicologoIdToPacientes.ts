@@ -1,4 +1,5 @@
-import { MigrationInterface, QueryRunner, TableColumn, TableForeignKey } from "typeorm";
+import { TableColumn, TableForeignKey } from "typeorm";
+import type { MigrationInterface, QueryRunner } from "typeorm";
 
 export class AddPsicologoIdToPacientes1769360000000 implements MigrationInterface {
   name = "AddPsicologoIdToPacientes1769360000000";
