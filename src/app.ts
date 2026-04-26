@@ -18,6 +18,7 @@ import estadisticasRoutes from "./routes/estadisticas.routes";
 import registroTareasRoutes from "./routes/registroTareas.routes";
 import mensajesDiariosRoutes from "./routes/mensajesDiarios.routes";
 import backupRoutes from "./routes/backup.routes";
+import pushSubscriptionRoutes from "./routes/pushSubscription.routes";
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use("/api/estadisticas", estadisticasRoutes);
 app.use("/api/registro-tareas", registroTareasRoutes);
 app.use("/api/mensajes-diarios", mensajesDiariosRoutes);
 app.use("/api/backup", backupRoutes);
+app.use("/api/subscriptions", pushSubscriptionRoutes);
 
 /* =======================
    Health check

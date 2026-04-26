@@ -13,6 +13,7 @@ import { Rol } from "../entities/Rol.entity";
 import { DiarioEmocional } from "../entities/DiarioEmocional.entity";
 import { AnalisisSentimiento } from "../entities/AnalisisSentimiento.entity";
 import { RegistroTareasTerapeuticas } from "../entities/RegistroTareasTerapeuticas.entity";
+import { PushSubscription } from "../entities/PushSubscription.entity";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -39,7 +40,8 @@ export const AppDataSource = new DataSource({
     Rol,
     DiarioEmocional,
     AnalisisSentimiento,
-    RegistroTareasTerapeuticas
+    RegistroTareasTerapeuticas,
+    PushSubscription
   ],
   migrations: ["src/migrations/*.ts"],
 });
