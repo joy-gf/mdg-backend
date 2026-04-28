@@ -12,9 +12,10 @@ router.post("/login", async (req, res) => {
 
     // 🔥 AHORA CON JOIN PARA TRAER EL ROL
     const { rows } = await pool.query(
-      `SELECT u.*, r.name AS role_name
+      `SELECT u.*, r.name AS role_name, p.foto_perfil
        FROM usuarios u
        JOIN roles r ON r.id = u.role_id
+       LEFT JOIN psicologos p ON p.usuario_id = u.id
        WHERE u.user_name = $1
        LIMIT 1`,
       [user_name]
@@ -34,6 +35,7 @@ router.post("/login", async (req, res) => {
       role_id: user.role_id,
       roleName: user.role_name,
       active: user.active,
+      avatar: user.foto_perfil ?? null,
     };
 
     const JWT_SECRET: Secret = process.env.JWT_SECRET as string;
