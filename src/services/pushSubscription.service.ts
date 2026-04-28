@@ -55,7 +55,8 @@ export class PushSubscriptionService {
       .where("cita.estado IN (:...estados)", { estados: ["activa", "pendiente"] })
       .andWhere(
         `(cita.fecha_sesion::text || ' ' || cita.hora_sesion)::timestamp
-         BETWEEN NOW() + INTERVAL '29 minutes' AND NOW() + INTERVAL '31 minutes'`
+         BETWEEN (NOW() AT TIME ZONE 'America/La_Paz') + INTERVAL '29 minutes'
+             AND (NOW() AT TIME ZONE 'America/La_Paz') + INTERVAL '31 minutes'`
       )
       .getMany();
 
