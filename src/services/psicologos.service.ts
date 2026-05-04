@@ -149,7 +149,7 @@ export class PsicologosService {
 
       // Hash the password before storing
       const saltRounds = 10;
-      const passwordHash = await bcrypt.hash(password, saltRounds);
+      const passwordHash = await bcrypt.hash(password!, saltRounds);
 
       // Crear el usuario
       const usuarioResult = await manager.query(
@@ -213,7 +213,7 @@ export class PsicologosService {
 
       // Hash the password before storing
       const saltRounds = 10;
-      const passwordHash = await bcrypt.hash(password, saltRounds);
+      const passwordHash = await bcrypt.hash(password!, saltRounds);
 
       const usuarioResult = await manager.query(
         `INSERT INTO usuarios (user_name, password_hash, role_id)

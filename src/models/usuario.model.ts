@@ -22,7 +22,7 @@ export class UsuarioModel {
 
     // Hash the password before storing
     const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(password, saltRounds);
+    const passwordHash = await bcrypt.hash(password!, saltRounds);
 
     const res = await pool.query(
       `INSERT INTO usuarios (user_name, password_hash, role_id)
@@ -34,7 +34,7 @@ export class UsuarioModel {
   }
 
   static async update(id: string, data: Partial<UsuarioInput>): Promise<Usuario> {
-    const { userName, password, roleId } = data;
+    const { userName, password, roleId, foto_perfil } = data;
 
     // Build dynamic UPDATE query based on provided fields
     const updates: string[] = [];
@@ -48,7 +48,6 @@ export class UsuarioModel {
     }
 
     if (password !== undefined && password !== null && password !== '') {
-      // Hash the password before storing (only if provided)
       const saltRounds = 10;
       const passwordHash = await bcrypt.hash(password, saltRounds);
       updates.push(`password_hash = $${paramIndex}`);
@@ -59,6 +58,12 @@ export class UsuarioModel {
     if (roleId !== undefined) {
       updates.push(`role_id = $${paramIndex}`);
       values.push(roleId);
+      paramIndex++;
+    }
+
+    if (foto_perfil !== undefined) {
+      updates.push(`foto_perfil = $${paramIndex}`);
+      values.push(foto_perfil);
       paramIndex++;
     }
 

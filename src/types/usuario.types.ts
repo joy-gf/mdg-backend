@@ -6,7 +6,8 @@ export interface Usuario {
 }
 
 export interface UsuarioInput {
-  userName: string;
-  password: string;
-  roleId: string;
+  userName?: string;
+  password?: string;
+  roleId?: string;
+  foto_perfil?: string | null;
 }

@@ -12,7 +12,8 @@ router.post("/login", async (req, res) => {
 
     // 🔥 AHORA CON JOIN PARA TRAER EL ROL
     const { rows } = await pool.query(
-      `SELECT u.*, r.name AS role_name, p.foto_perfil
+      `SELECT u.*, r.name AS role_name,
+              COALESCE(p.foto_perfil, u.foto_perfil) AS foto_perfil
        FROM usuarios u
        JOIN roles r ON r.id = u.role_id
        LEFT JOIN psicologos p ON p.usuario_id = u.id
@@ -28,25 +29,26 @@ router.post("/login", async (req, res) => {
     const match = await bcrypt.compare(password, user.password_hash);
     if (!match) return res.status(401).json({ error: "Credenciales incorrectas" });
 
-    // Payload completo con rol
-    const payload = {
+    const JWT_SECRET: Secret = process.env.JWT_SECRET as string;
+
+    const tokenPayload = {
       id: user.id,
       user_name: user.user_name,
       role_id: user.role_id,
       roleName: user.role_name,
       active: user.active,
-      avatar: user.foto_perfil ?? null,
     };
 
-    const JWT_SECRET: Secret = process.env.JWT_SECRET as string;
-
-    const token = jwt.sign(payload, JWT_SECRET, {
+    const token = jwt.sign(tokenPayload, JWT_SECRET, {
       expiresIn: (process.env.JWT_EXPIRES_IN || "7d") as any,
     });
 
     res.json({
       token,
-      user: payload,
+      user: {
+        ...tokenPayload,
+        avatar: user.foto_perfil ?? null,
+      },
     });
 
   } catch (err) {

@@ -24,6 +24,9 @@ export class Usuario {
   @JoinColumn({ name: "role_id" })
   rol!: Rol;
 
+  @Column({ type: "text", nullable: true })
+  foto_perfil!: string | null;
+
   @Column({ default: true })
   active!: boolean;
 
