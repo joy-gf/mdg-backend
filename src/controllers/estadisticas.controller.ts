@@ -30,4 +30,14 @@ export class EstadisticasController {
       });
     }
   }
+
+  static async getResumenAdmin(_req: Request, res: Response): Promise<Response> {
+    try {
+      const resumen = await EstadisticasController.estadisticasService.getResumenAdmin();
+      return res.json(resumen);
+    } catch (error) {
+      console.error("Error en getResumenAdmin:", error);
+      return res.status(500).json({ message: "Error al obtener resumen" });
+    }
+  }
 }

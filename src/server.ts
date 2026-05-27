@@ -4,6 +4,7 @@ import "reflect-metadata";
 import { AppDataSource } from "./config/datasource";
 import app from "./app";
 import { scheduleBackups } from "./services/backup.service";
+import { scheduleReminders } from "./services/pushSubscription.service";
 
 const port = process.env.PORT || 4000;
 
@@ -16,6 +17,8 @@ AppDataSource.initialize()
   .then(() => {
     console.log("📦 Database connected");
     scheduleBackups();
+    scheduleReminders();
+    scheduleReminders();
   })
   .catch((err) => {
     console.error("❌ Database connection error:", err);

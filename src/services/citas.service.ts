@@ -4,6 +4,7 @@ import { Cita, SolicitadaPor } from "../entities/Cita.entity";
 import { Paciente } from "../entities/Paciente.entity";
 import { Psicologo } from "../entities/Psicologo.entity";
 import { Consultorio } from "../entities/Consultorio.entity";
+import { PushSubscriptionService } from "./pushSubscription.service";
 
 export class CitasService {
   private static repo = AppDataSource.getRepository(Cita);
@@ -138,8 +139,16 @@ export class CitasService {
       estado: "pendiente",
     };
     const cita = this.repo.create(solicitudData);
+    const saved = await this.repo.save(cita);
 
-    return this.repo.save(cita);
+    PushSubscriptionService.notifyNuevaSolicitud(
+      data.psicologoId,
+      data.pacienteId,
+      data.fecha_sesion,
+      data.hora_sesion
+    ).catch(err => console.error("[Push] Error notificando nueva solicitud:", err));
+
+    return saved;
   }
 
   static async confirmar(
@@ -225,6 +234,15 @@ export class CitasService {
     }
 
     await this.repo.update(id, updateData);
+
+    if (cita.paciente?.id) {
+      PushSubscriptionService.notifyConfirmacionCita(
+        cita.paciente.id,
+        cita.fecha_sesion,
+        cita.hora_sesion
+      ).catch(err => console.error("[Push] Error notificando confirmación:", err));
+    }
+
     return this.repo.findOne({
       where: { id },
       relations: ["paciente", "psicologo", "consultorio"],
@@ -249,6 +267,15 @@ export class CitasService {
       estado: "rechazada",
       motivo_rechazo: motivo || null,
     });
+
+    if (cita.paciente?.id) {
+      PushSubscriptionService.notifyRechazo(
+        cita.paciente.id,
+        cita.fecha_sesion,
+        cita.hora_sesion,
+        motivo
+      ).catch(err => console.error("[Push] Error notificando rechazo:", err));
+    }
 
     return this.repo.findOne({
       where: { id },
