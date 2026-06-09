@@ -7,6 +7,7 @@ const analisisRepo = AppDataSource.getRepository(AnalisisSentimiento);
 const diarioRepo = AppDataSource.getRepository(DiarioEmocional);
 
 const SENTIMENT_SERVICE_URL = process.env.SENTIMENT_SERVICE_URL || "http://localhost:8000";
+const SENTIMENT_TIMEOUT_MS = 90_000; // HF Spaces free tier can take 60-90s on cold start
 
 const SENTIMENT_MAP: Record<string, "esperanzador" | "desafiante" | "equilibrado"> = {
   "positivo": "esperanzador",
@@ -43,21 +44,29 @@ export class AnalisisSentimientoService {
         where: { diario_emocional_id: diarioId },
       });
 
-      if (existingAnalisis) {
+      // Si el diario está pendiente/error significa que fue editado o falló antes — re-analizar
+      if (existingAnalisis && diario.estado_analisis === "analizado") {
         console.log(`Entrada ${diarioId} ya fue analizada`);
         return existingAnalisis;
       }
 
+      if (existingAnalisis) {
+        await analisisRepo.remove(existingAnalisis);
+      }
+
       console.log(`Analizando entrada ${diarioId}...`);
 
+      const targetUrl = `${SENTIMENT_SERVICE_URL}/analyze/enhanced`;
+      console.log(`📡 Llamando al servicio de sentimientos: ${targetUrl}`);
+
       const response = await axios.post<SentimentAnalysisResult>(
-        `${SENTIMENT_SERVICE_URL}/analyze/enhanced`,
+        targetUrl,
         {
           text: diario.texto_entrada,
           diario_id: diarioId,
         },
         {
-          timeout: 30000,
+          timeout: SENTIMENT_TIMEOUT_MS,
         }
       );
 
@@ -90,7 +99,13 @@ export class AnalisisSentimientoService {
 
       return analisis;
     } catch (error: any) {
-      console.error(`Error analizando entrada ${diarioId}:`, error.message);
+      const isAxiosError = error.isAxiosError;
+      const status = error.response?.status;
+      const code = error.code; // ECONNREFUSED, ETIMEDOUT, etc.
+      console.error(
+        `❌ Error analizando entrada ${diarioId}: ${error.message}` +
+        (isAxiosError ? ` | URL: ${SENTIMENT_SERVICE_URL} | code: ${code} | status: ${status}` : "")
+      );
 
       await diarioRepo.update(diarioId, { estado_analisis: "error" });
 
@@ -101,10 +116,10 @@ export class AnalisisSentimientoService {
   static async procesarPendientes(pacienteId: string): Promise<number> {
     try {
       const pendientes = await diarioRepo.find({
-        where: {
-          paciente_id: pacienteId,
-          estado_analisis: "pendiente",
-        },
+        where: [
+          { paciente_id: pacienteId, estado_analisis: "pendiente" },
+          { paciente_id: pacienteId, estado_analisis: "error" },
+        ],
         order: { fecha_entrada: "ASC" },
       });
 

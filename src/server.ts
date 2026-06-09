@@ -10,6 +10,12 @@ const port = process.env.PORT || 4000;
 
 app.listen(port, () => {
   console.log(`🚀 Server running on port ${port}`);
+  const sentimentUrl = process.env.SENTIMENT_SERVICE_URL;
+  if (sentimentUrl) {
+    console.log(`🧠 Sentiment service URL: ${sentimentUrl}`);
+  } else {
+    console.warn("⚠️  SENTIMENT_SERVICE_URL no está configurado — el análisis de sentimientos NO funcionará en producción (fallback: http://localhost:8000)");
+  }
 });
 
 // conexión DB separada
