@@ -34,7 +34,7 @@ export class UsuarioModel {
   }
 
   static async update(id: string, data: Partial<UsuarioInput>): Promise<Usuario> {
-    const { userName, password, roleId, foto_perfil } = data;
+    const { userName, password, roleId, foto_perfil, debeCambiarPassword } = data;
 
     // Build dynamic UPDATE query based on provided fields
     const updates: string[] = [];
@@ -53,6 +53,9 @@ export class UsuarioModel {
       updates.push(`password_hash = $${paramIndex}`);
       values.push(passwordHash);
       paramIndex++;
+
+      // Restablecer contraseña desbloquea la cuenta y reinicia el contador de intentos
+      updates.push(`failed_login_attempts = 0`, `locked_at = NULL`);
     }
 
     if (roleId !== undefined) {
@@ -64,6 +67,12 @@ export class UsuarioModel {
     if (foto_perfil !== undefined) {
       updates.push(`foto_perfil = $${paramIndex}`);
       values.push(foto_perfil);
+      paramIndex++;
+    }
+
+    if (debeCambiarPassword !== undefined) {
+      updates.push(`debe_cambiar_password = $${paramIndex}`);
+      values.push(debeCambiarPassword);
       paramIndex++;
     }
 

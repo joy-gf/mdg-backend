@@ -149,8 +149,8 @@ export class PacientesService {
 
       // Crear el usuario
       const usuarioResult = await manager.query(
-        `INSERT INTO usuarios (user_name, password_hash, role_id)
-         VALUES ($1, $2, $3)
+        `INSERT INTO usuarios (user_name, password_hash, role_id, debe_cambiar_password)
+         VALUES ($1, $2, $3, true)
          RETURNING *`,
         [userName, passwordHash, role_id]
       );
@@ -203,8 +203,8 @@ export class PacientesService {
       const passwordHash = await bcrypt.hash(password!, saltRounds);
 
       const usuarioResult = await manager.query(
-        `INSERT INTO usuarios (user_name, password_hash, role_id)
-         VALUES ($1, $2, $3)
+        `INSERT INTO usuarios (user_name, password_hash, role_id, debe_cambiar_password)
+         VALUES ($1, $2, $3, true)
          RETURNING *`,
         [userName, passwordHash, role_id]
       );

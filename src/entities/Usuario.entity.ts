@@ -30,6 +30,15 @@ export class Usuario {
   @Column({ default: true })
   active!: boolean;
 
+  @Column({ name: "failed_login_attempts", default: 0 })
+  failedLoginAttempts!: number;
+
+  @Column({ name: "locked_at", type: "timestamp", nullable: true })
+  lockedAt!: Date | null;
+
+  @Column({ name: "debe_cambiar_password", default: false })
+  debeCambiarPassword!: boolean;
+
   @CreateDateColumn({ name: "created_date" })
   createdDate!: Date;
 

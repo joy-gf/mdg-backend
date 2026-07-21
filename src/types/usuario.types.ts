@@ -3,6 +3,7 @@ export interface Usuario {
   userName: string;
   password: string;
   roleId: string;
+  debeCambiarPassword?: boolean;
 }
 
 export interface UsuarioInput {
@@ -10,4 +11,5 @@ export interface UsuarioInput {
   password?: string;
   roleId?: string;
   foto_perfil?: string | null;
+  debeCambiarPassword?: boolean;
 }
