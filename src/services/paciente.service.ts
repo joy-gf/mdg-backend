@@ -13,7 +13,7 @@ export class PacientesService {
   private static repo = AppDataSource.getRepository(Paciente);
 
   static getAll(search?: string, psicologoId?: string) {
-    const baseWhere: any = { activo: true };
+    const baseWhere: any = {};
 
     if (psicologoId) {
       baseWhere.psicologo_id = psicologoId;

@@ -16,13 +16,13 @@ export class PsicologosService {
     if (search) {
       return this.repo.find({
         where: [
-          { nombres: ILike(`%${search}%`), activo: true },
-          { apellidos: ILike(`%${search}%`), activo: true },
-          { especialidades: ILike(`%${search}%`), activo: true },
+          { nombres: ILike(`%${search}%`) },
+          { apellidos: ILike(`%${search}%`) },
+          { especialidades: ILike(`%${search}%`) },
         ],
       });
     }
-    return this.repo.find({ where: { activo: true } });
+    return this.repo.find();
   }
 
   static getById(id: string) {
