@@ -63,12 +63,22 @@ export class CitasService {
 
     const fin = new Date(inicio.getTime() + data.duracion_minutos * 60000);
 
-    await this.validarDisponibilidad(
-      data.consultorioId!,
-      data.psicologoId,
-      inicio,
-      fin
-    );
+    // Solo validar consultorio si es cita presencial
+    if (data.tipo_cita === "Presencial" || data.consultorioId) {
+      await this.validarDisponibilidad(
+        data.consultorioId!,
+        data.psicologoId,
+        inicio,
+        fin
+      );
+    } else {
+      // Para citas virtuales o a domicilio, solo validar disponibilidad del psicólogo
+      await this.validarDisponibilidadPsicologo(
+        data.psicologoId,
+        inicio,
+        fin
+      );
+    }
 
     const citaData: DeepPartial<Cita> = {
       paciente: data.pacienteId ? ({ id: data.pacienteId } as Paciente) : null,
@@ -205,7 +215,23 @@ export class CitasService {
 
     const fin = new Date(inicio.getTime() + cita.duracion_minutos * 60000);
 
+    console.log('Confirmando cita:', {
+      citaId: id,
+      estado: cita.estado,
+      tipo_cita: cita.tipo_cita,
+      consultorioId: data.consultorioId,
+      horaInicio: horaFormateada,
+      fecha: cita.fecha_sesion,
+      duracion: cita.duracion_minutos,
+    });
+
     if (data.consultorioId) {
+      console.log('Validando disponibilidad de consultorio:', {
+        consultorioId: data.consultorioId,
+        psicologoId: cita.psicologo.id,
+        inicio: inicio.toISOString(),
+        fin: fin.toISOString(),
+      });
       await this.validarDisponibilidad(
         data.consultorioId,
         cita.psicologo.id,
@@ -372,6 +398,14 @@ export class CitasService {
     const horaInicio = inicio.toTimeString().slice(0, 8); // HH:mm:ss
     const horaFin = fin.toTimeString().slice(0, 8); // HH:mm:ss
 
+    console.log('validarDisponibilidad - búsqueda:', {
+      fechaInicio,
+      horaInicio,
+      horaFin,
+      consultorioId,
+      psicologoId,
+    });
+
     // Verificar conflicto con consultorio (solo citas confirmadas y reprogramadas)
     if (consultorioId) {
       const conflictoConsultorio = await this.repo
@@ -384,6 +418,8 @@ export class CitasService {
         )
         .andWhere("c.consultorioId = :consultorioId", { consultorioId })
         .getOne();
+
+      console.log('Resultado búsqueda consultorio:', { conflictoConsultorio });
 
       if (conflictoConsultorio) {
         const error = new Error("El consultorio ya está ocupado en ese horario");
@@ -440,5 +476,25 @@ export class CitasService {
       (error as any).conflictHora = conflictoPsicologo.hora_sesion;
       throw error;
     }
+  }
+
+  static async delete(id: string) {
+    const cita = await this.repo.findOne({
+      where: { id },
+      relations: ["paciente"],
+    });
+
+    if (!cita) {
+      throw new Error("Cita no encontrada");
+    }
+
+    // Solo permitir eliminar citas que no están activas (pendientes, rechazadas, canceladas)
+    if (cita.estado === "activa") {
+      throw new Error("Las citas activas no pueden ser eliminadas. Usa la función cancelar en su lugar.");
+    }
+
+    await this.repo.delete(id);
+
+    return { message: "Cita eliminada exitosamente" };
   }
 }
