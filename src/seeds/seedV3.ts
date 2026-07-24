@@ -575,7 +575,8 @@ async function main() {
         // ── Antecedentes ──
         await qr.query(
           `INSERT INTO antecedentes_paciente (id, paciente_id, personales, familiares, medicos_psiquiatricos)
-           VALUES ($1,$2,$3,$4,$5)`,
+           VALUES ($1,$2,$3,$4,$5)
+           ON CONFLICT (paciente_id) DO NOTHING`,
           [randomUUID(), pac.id,
             enc("Sin tratamiento psicológico previo relevante."),
             enc("Sin antecedentes familiares de salud mental relevantes reportados."),
@@ -598,7 +599,8 @@ async function main() {
               diagnostico_clinico_encrypted, objetivo_general_encrypted, plan_trabajo_encrypted,
               consumo_sustancias, tareas_terapeuticas, tareas_terapeuticas_list,
               fecha_inicio, fecha_cierre, comentarios_finales_encrypted, activo)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+           ON CONFLICT ("pacienteId", fecha_inicio) DO NOTHING`,
           [trId, pac.id, psicoId, archetype.tipo, archetype.numeroSesiones,
             enc(archetype.obs), enc(archetype.hipotesis), enc(archetype.diagnostico),
             enc(archetype.objetivo), enc(archetype.plan),
@@ -655,7 +657,8 @@ async function main() {
                  (id, "tratamientoId", fecha_sesion, fecha_proxima_sesion,
                   seguimiento_encrypted, recomendaciones_encrypted,
                   objetivos_proxima_sesion_encrypted, finalizada, fecha_finalizacion)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,true,$8)`,
+               VALUES ($1,$2,$3,$4,$5,$6,$7,true,$8)
+               ON CONFLICT ("tratamientoId", fecha_sesion) DO NOTHING`,
               [randomUUID(), trId, fecha, isClosingSession ? null : nextFecha,
                 enc(notes.base.replace("{nombre}", pac.nombres)),
                 enc(notes.reco),
@@ -679,7 +682,8 @@ async function main() {
               const diarioId = randomUUID();
               await qr.query(
                 `INSERT INTO diario_emocional (id, paciente_id, fecha_entrada, emocion_seleccionada, texto_entrada, estado_analisis, created_at)
-                 VALUES ($1,$2,$3,$4,$5,'analizado',$6)`,
+                 VALUES ($1,$2,$3,$4,$5,'analizado',$6)
+                 ON CONFLICT (paciente_id, fecha_entrada) DO NOTHING`,
                 [diarioId, pac.id, d, tpl.emocion, tpl.texto, `${d}T20:00:00`]
               );
               const sc = scoresFor(tpl.sentimiento);
@@ -688,7 +692,8 @@ async function main() {
                    (id, diario_emocional_id, paciente_id, fecha_analisis, sentimiento_general,
                     confianza, score_positivo, score_negativo, score_neutral, emocion_predominante,
                     palabras_clave, alertas, modelo_usado)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+                 ON CONFLICT (diario_emocional_id) DO NOTHING`,
                 [randomUUID(), diarioId, pac.id, d, tpl.sentimiento,
                   sc.conf, sc.pos, sc.neg, sc.neu, tpl.emocion,
                   JSON.stringify([{ word: tpl.emocion.toLowerCase(), frequency: 2 }]),
@@ -715,7 +720,8 @@ async function main() {
             await qr.query(
               `INSERT INTO registro_tareas_terapeuticas
                  (id, paciente_id, tipo_tarea, fecha, actividades_realizadas, veces_completado, tiempo_total_segundos, created_at, updated_at)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$8)`,
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$8)
+               ON CONFLICT (paciente_id, tipo_tarea, fecha) DO NOTHING`,
               [randomUUID(), pac.id, tipo, t, tpl.actividades.join(","), tpl.veces, tpl.tiempo, `${t}T21:00:00`]
             );
             tareaCount++;
