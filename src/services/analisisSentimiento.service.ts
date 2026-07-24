@@ -1,3 +1,4 @@
+import { In } from "typeorm";
 import { AppDataSource } from "../config/datasource";
 import { AnalisisSentimiento } from "../entities/AnalisisSentimiento.entity";
 import { DiarioEmocional } from "../entities/DiarioEmocional.entity";
@@ -9,11 +10,51 @@ const diarioRepo = AppDataSource.getRepository(DiarioEmocional);
 const SENTIMENT_SERVICE_URL = process.env.SENTIMENT_SERVICE_URL || "http://localhost:8000";
 const SENTIMENT_TIMEOUT_MS = 90_000; // HF Spaces free tier can take 60-90s on cold start
 
-const SENTIMENT_MAP: Record<string, "esperanzador" | "desafiante" | "equilibrado"> = {
-  "positivo": "esperanzador",
-  "negativo": "desafiante",
-  "neutral": "equilibrado",
+// Valencia de cada emoción, ya sea autoreportada por el paciente en el diario
+// (Feliz, Tranquilo, Ansioso, Estresado, Triste, Molesto, Motivado,
+// Agradecido) o detectada por la IA (incluye además Solitario y Confundido,
+// que el paciente no puede elegir pero el modelo sí puede devolver). Mismo
+// criterio positivo/negativo/neutral que el frontend
+// (AnalisisSentimientoTab.tsx: EMOTION_SENTIMENT_MAP) para que signifique lo
+// mismo en toda la app.
+const EMOTION_VALENCE: Record<string, number> = {
+  Feliz: 1,
+  Tranquilo: 1,
+  Motivado: 1,
+  Agradecido: 1,
+  Ansioso: -1,
+  Estresado: -1,
+  Triste: -1,
+  Molesto: -1,
+  Solitario: -1,
+  Confundido: -1,
+  Neutral: 0,
 };
+
+// Cuánto pesa la percepción autoreportada del paciente cuando se combina con
+// el score de la IA (ver combinarScoreConAutoreporte).
+const PATIENT_REPORT_WEIGHT = 0.4;
+
+/**
+ * Combina el score de la IA (score_positivo - score_negativo) con la emoción
+ * que el paciente autoreportó ese día. La IA predomina siempre, EXCEPTO
+ * cuando el paciente reporta un estado más negativo del que la IA detectó
+ * (p.ej. paciente dice "Ansioso" pero el texto se clasificó como neutral o
+ * positivo) — ahí se mezcla un 40% de su autoreporte para no subestimar su
+ * malestar. Si el paciente reporta algo igual o más positivo que lo que la
+ * IA detectó, la IA manda sin ajuste (puede estar detectando angustia que el
+ * paciente no reconoce o no quiere admitir).
+ */
+function combinarScoreConAutoreporte(scoreIA: number, emocionSeleccionada: string | null | undefined): number {
+  if (!emocionSeleccionada) return scoreIA;
+
+  const valenciaPaciente = EMOTION_VALENCE[emocionSeleccionada];
+  if (valenciaPaciente === undefined) return scoreIA;
+
+  if (valenciaPaciente >= scoreIA) return scoreIA;
+
+  return (1 - PATIENT_REPORT_WEIGHT) * scoreIA + PATIENT_REPORT_WEIGHT * valenciaPaciente;
+}
 
 interface SentimentAnalysisResult {
   sentimiento_general: string;
@@ -72,7 +113,16 @@ export class AnalisisSentimientoService {
 
       const result = response.data;
 
-      const sentimientoAmigable = SENTIMENT_MAP[result.sentimiento_general] || "equilibrado";
+      // Se usa el signo del score compuesto (positivo - negativo) en vez de
+      // la etiqueta ganadora cruda del modelo (result.sentimiento_general):
+      // en texto narrativo de diario, "neutral" domina con frecuencia aunque
+      // el componente negativo supere claramente al positivo, lo cual
+      // etiquetaba entradas claramente negativas como "equilibrado". El
+      // margen ±0.1 es el mismo que usa el detector de emociones para decidir
+      // cuándo el signo del score debe imponerse sobre la etiqueta "neutral".
+      const scoreCompuesto = result.score_positivo - result.score_negativo;
+      const sentimientoAmigable: "esperanzador" | "desafiante" | "equilibrado" =
+        scoreCompuesto > 0.1 ? "esperanzador" : scoreCompuesto < -0.1 ? "desafiante" : "equilibrado";
 
       const analisis = analisisRepo.create({
         diario_emocional_id: diarioId,
@@ -190,11 +240,20 @@ export class AnalisisSentimientoService {
       }
     });
 
+    // Emoción autoreportada por el paciente para cada entrada analizada, usada
+    // para no subestimar su malestar (ver combinarScoreConAutoreporte).
+    const diarioIds = analisis.map((a) => a.diario_emocional_id).filter(Boolean);
+    const diarios = diarioIds.length > 0
+      ? await diarioRepo.find({ where: { id: In(diarioIds) } })
+      : [];
+    const emocionSeleccionadaPorDiario = new Map(diarios.map((d) => [d.id, d.emocion_seleccionada]));
+
     const sumScores = analisis.reduce((acc, a) => {
       const scorePositivo = typeof a.score_positivo === 'number' ? a.score_positivo : 0;
       const scoreNegativo = typeof a.score_negativo === 'number' ? a.score_negativo : 0;
-      const score = scorePositivo - scoreNegativo;
-      return acc + score;
+      const scoreIA = scorePositivo - scoreNegativo;
+      const emocionSeleccionada = emocionSeleccionadaPorDiario.get(a.diario_emocional_id);
+      return acc + combinarScoreConAutoreporte(scoreIA, emocionSeleccionada);
     }, 0);
 
     const sentimientoPromedio = analisis.length > 0 ? sumScores / analisis.length : 0;
@@ -222,7 +281,9 @@ export class AnalisisSentimientoService {
       .map((a) => {
         const scorePositivo = typeof a.score_positivo === 'number' ? a.score_positivo : 0;
         const scoreNegativo = typeof a.score_negativo === 'number' ? a.score_negativo : 0;
-        const score = scorePositivo - scoreNegativo;
+        const scoreIA = scorePositivo - scoreNegativo;
+        const emocionSeleccionada = emocionSeleccionadaPorDiario.get(a.diario_emocional_id);
+        const score = combinarScoreConAutoreporte(scoreIA, emocionSeleccionada);
         const confianza = typeof a.confianza === 'number' ? a.confianza : 0;
 
         return {
@@ -252,8 +313,12 @@ export class AnalisisSentimientoService {
 
     // Insight sobre tendencia
     if (evolucionTemporal.length >= 3) {
-      const primerosScores = evolucionTemporal.slice(0, Math.min(3, Math.ceil(evolucionTemporal.length / 2)));
-      const ultimosScores = evolucionTemporal.slice(-Math.min(3, Math.ceil(evolucionTemporal.length / 2)));
+      // Math.floor (no ceil) evita que, con una cantidad impar de entradas,
+      // la entrada del medio caiga en ambos grupos a la vez y se cuente dos
+      // veces, sesgando la comparación inicial-vs-reciente.
+      const mitad = Math.min(3, Math.floor(evolucionTemporal.length / 2));
+      const primerosScores = evolucionTemporal.slice(0, mitad);
+      const ultimosScores = evolucionTemporal.slice(-mitad);
 
       const promedioInicial = primerosScores.reduce((sum, e) => sum + e.score, 0) / primerosScores.length;
       const promedioReciente = ultimosScores.reduce((sum, e) => sum + e.score, 0) / ultimosScores.length;
@@ -280,7 +345,7 @@ export class AnalisisSentimientoService {
       const porcentaje = (count / analisis.length) * 100;
 
       if (porcentaje >= 50) {
-        const esNegativa = ["Ansioso", "Estresado", "Triste", "Molesto", "Frustrado"].includes(emocion);
+        const esNegativa = (EMOTION_VALENCE[emocion] ?? 0) < 0;
         insights.push({
           type: esNegativa ? "warning" : "neutral",
           text: `La emoción "${emocion}" aparece en ${porcentaje.toFixed(0)}% de las entradas del paciente, sugiriendo un patrón emocional recurrente que puede requerir atención clínica.`,

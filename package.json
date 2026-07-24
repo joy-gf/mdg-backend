@@ -12,7 +12,9 @@
     "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert -d src/config/datasource.ts",
     "migration:show": "ts-node ./node_modules/typeorm/cli.js migration:show -d src/config/datasource.ts",
     "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate -d src/config/datasource.ts",
-    "seed": "ts-node --project tsconfig.json src/seeds/seed.ts"
+    "seed": "ts-node --project tsconfig.json src/seeds/seed.ts",
+    "seed:v3": "ts-node --project tsconfig.json src/seeds/seedV3.ts",
+    "seed:admin-psicologo": "ts-node --project tsconfig.json src/seeds/seedAdminPsicologo.ts"
   },
   "keywords": [],
   "author": "",
