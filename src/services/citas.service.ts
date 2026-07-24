@@ -488,12 +488,19 @@ export class CitasService {
       throw new Error("Cita no encontrada");
     }
 
-    // Solo permitir eliminar citas que no están activas (pendientes, rechazadas, canceladas)
-    if (cita.estado === "activa") {
-      throw new Error("Las citas activas no pueden ser eliminadas. Usa la función cancelar en su lugar.");
+    // Solo prohibir eliminar citas finalizadas
+    if (cita.estado === "finalizada") {
+      throw new Error("Las citas finalizadas no pueden ser eliminadas.");
     }
 
-    await this.repo.delete(id);
+    // Verificar si la cita es pasada
+    const citaDateTime = new Date(`${cita.fecha_sesion}T${cita.hora_sesion}`);
+    const now = new Date();
+    if (citaDateTime < now) {
+      throw new Error("Las citas pasadas no pueden ser eliminadas.");
+    }
+
+    await this.repo.delete({ id });
 
     return { message: "Cita eliminada exitosamente" };
   }

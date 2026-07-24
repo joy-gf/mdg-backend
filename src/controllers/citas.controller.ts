@@ -189,9 +189,9 @@ export class CitasController {
         });
       }
 
-      if (error.message?.includes("no puede ser eliminada")) {
-        return res.status(400).json({
-          error: "VALIDATION_ERROR",
+      if (error.message?.includes("no pueden ser eliminadas") || error.message?.includes("no puede ser eliminada") || error.message?.includes("finalizadas") || error.message?.includes("pasadas")) {
+        return res.status(409).json({
+          error: "CONFLICT",
           message: error.message,
         });
       }
