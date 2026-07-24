@@ -72,7 +72,14 @@ export class PushSubscriptionService {
     const payload = JSON.stringify({
       title: "Nueva solicitud de cita",
       body: `${nombrePaciente} ha solicitado una cita para el ${fecha} a las ${horaFormateada}`,
-      url: "/agenda",
+      url: `/agenda?date=${fecha}&time=${horaFormateada}`,
+      data: {
+        tipo: "nueva_solicitud",
+        fecha,
+        hora: horaFormateada,
+        pacienteId,
+        psicologoId,
+      },
     });
 
     for (const sub of subscriptions) {

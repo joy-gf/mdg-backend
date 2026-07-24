@@ -19,7 +19,7 @@
 import "reflect-metadata";
 import "dotenv/config";
 import { randomUUID } from "crypto";
-import { AppDataSource } from "../config/datasource";
+import { AppDataSourceNoMigrations } from "../config/datasource-no-migrations";
 
 interface NewPatientDef {
   ci: string;
@@ -46,8 +46,8 @@ const PACIENTES: NewPatientDef[] = [
 ];
 
 async function main() {
-  await AppDataSource.initialize();
-  const qr = AppDataSource.createQueryRunner();
+  await AppDataSourceNoMigrations.initialize();
+  const qr = AppDataSourceNoMigrations.createQueryRunner();
   await qr.connect();
 
   try {
@@ -131,7 +131,7 @@ async function main() {
     throw err;
   } finally {
     await qr.release();
-    await AppDataSource.destroy();
+    await AppDataSourceNoMigrations.destroy();
   }
 }
 
