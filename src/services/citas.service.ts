@@ -493,7 +493,7 @@ export class CitasService {
       throw new Error("Las citas activas no pueden ser eliminadas. Usa la función cancelar en su lugar.");
     }
 
-    await this.repo.delete(id);
+    await this.repo.delete({ id });
 
     return { message: "Cita eliminada exitosamente" };
   }
