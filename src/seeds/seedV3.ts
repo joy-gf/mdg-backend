@@ -84,6 +84,20 @@ function findSlot(date: string, psicoId: string, consultorios: string[]): { hora
 // ══════════════════════════════════════════════════════════
 type TipoTarea = "registro_actividades" | "ejercicios_gratitud" | "higiene_sueno" | "ejercicios_respiracion";
 
+// El frontend (TareasTerapeuticasDialog.tsx: TAREAS_TERAPEUTICAS) guarda las
+// tareas asignadas como frases legibles, no como los slugs internos de
+// TipoTarea (esos solo existen para indexar TAREA_TEMPLATES y el enum
+// registro_tareas_terapeuticas.tipo_tarea). Sin este mapeo,
+// tareas_terapeuticas_list queda con "registro_actividades" en vez de
+// "Registro de actividades" y se ve crudo en la UI.
+const TAREA_LABEL: Record<string, string> = {
+  ejercicios_respiracion: "Guías de respiración",
+  registro_actividades: "Registro de actividades",
+  ejercicios_gratitud: "Ejercicios de gratitud",
+  higiene_sueno: "Higiene del sueño",
+  "Diario emocional": "Diario emocional",
+};
+
 interface Archetype {
   tipo: string;
   obs: string;
@@ -483,20 +497,41 @@ async function main() {
 
     let creados = 0;
     let conUsuario = 0;
+    let reutilizados = 0;
     for (const p of grouped) {
       if (!p.isNew) continue;
       const def = p.newDef!;
+
+      // Idempotencia: si ya existe un paciente con este CI (de una corrida
+      // anterior de este mismo seed), reutilizarlo en vez de intentar
+      // crearlo de nuevo — evita el choque de unique constraint en
+      // usuarios.user_name / pacientes.ci al re-ejecutar el script.
+      const [pacienteExistente] = await qr.query(`SELECT id FROM pacientes WHERE ci = $1`, [def.ci]);
+      if (pacienteExistente) {
+        p.id = pacienteExistente.id;
+        p.isNew = false;
+        reutilizados++;
+        continue;
+      }
+
       const pacId = randomUUID();
       const tendraTareas = p.archetype.tareasList.length > 0;
 
       let usuarioId: string | null = null;
       if (tendraTareas) {
-        usuarioId = randomUUID();
-        await qr.query(
-          `INSERT INTO usuarios (id, user_name, password_hash, role_id, debe_cambiar_password) VALUES ($1,$2,$3,$4,true)`,
-          [usuarioId, def.userName, defaultPacientePasswordHash, rolPaciente.id]
-        );
-        conUsuario++;
+        // Cubre el caso de un estado inconsistente de una corrida previa
+        // interrumpida: el usuario llegó a crearse pero el paciente no.
+        const [usuarioExistente] = await qr.query(`SELECT id FROM usuarios WHERE user_name = $1`, [def.userName]);
+        if (usuarioExistente) {
+          usuarioId = usuarioExistente.id;
+        } else {
+          usuarioId = randomUUID();
+          await qr.query(
+            `INSERT INTO usuarios (id, user_name, password_hash, role_id, debe_cambiar_password) VALUES ($1,$2,$3,$4,true)`,
+            [usuarioId, def.userName, defaultPacientePasswordHash, rolPaciente.id]
+          );
+          conUsuario++;
+        }
       }
 
       await qr.query(
@@ -510,6 +545,9 @@ async function main() {
 
       p.id = pacId;
       creados++;
+    }
+    if (reutilizados > 0) {
+      console.log(`  ℹ ${reutilizados} pacientes nuevos ya existían de una corrida anterior — reutilizados sin duplicar`);
     }
     console.log(`  ✓ ${creados} pacientes nuevos creados (${conUsuario} con usuario/contraseña)`);
     console.log(`  ℹ Total de pacientes a procesar: ${grouped.length}`);
@@ -564,7 +602,8 @@ async function main() {
           [trId, pac.id, psicoId, archetype.tipo, archetype.numeroSesiones,
             enc(archetype.obs), enc(archetype.hipotesis), enc(archetype.diagnostico),
             enc(archetype.objetivo), enc(archetype.plan),
-            archetype.consumo, archetype.tareasTexto, JSON.stringify(archetype.tareasList),
+            archetype.consumo, archetype.tareasTexto,
+            JSON.stringify(archetype.tareasList.map((t) => TAREA_LABEL[t] || t)),
             fechaInicio, fechaCierre,
             estado === "concluido" ? enc("Tratamiento concluido satisfactoriamente. Paciente alcanzó los objetivos terapéuticos planteados.")
               : estado === "abandonado" ? enc("Paciente discontinuó la asistencia sin previo aviso. Se intentó contacto de seguimiento sin respuesta.")

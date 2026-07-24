@@ -11,6 +11,7 @@ import { Cita } from "../entities/Cita.entity";
 import { Usuario } from "../entities/Usuario.entity";
 import { Rol } from "../entities/Rol.entity";
 import { DiarioEmocional } from "../entities/DiarioEmocional.entity";
+import { EjerciciosGratitud } from "../entities/EjerciciosGratitud.entity";
 import { AnalisisSentimiento } from "../entities/AnalisisSentimiento.entity";
 import { RegistroTareasTerapeuticas } from "../entities/RegistroTareasTerapeuticas.entity";
 import { PushSubscription } from "../entities/PushSubscription.entity";
@@ -40,6 +41,7 @@ export const AppDataSource = new DataSource({
     Usuario,
     Rol,
     DiarioEmocional,
+    EjerciciosGratitud,
     AnalisisSentimiento,
     RegistroTareasTerapeuticas,
     PushSubscription,
