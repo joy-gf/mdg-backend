@@ -17,7 +17,7 @@ import "reflect-metadata";
 import "dotenv/config";
 import { randomUUID } from "crypto";
 import * as bcrypt from "bcrypt";
-import { AppDataSource } from "../config/datasource";
+import { AppDataSourceNoMigrationsNoMigrations } from "../config/datasource-no-migrations";
 import { encryptText, deriveKey } from "../utils/crypto.util";
 
 const ENC_KEY = deriveKey(
@@ -410,8 +410,8 @@ const NEW_PATIENTS: NewPatientDef[] = [
 // MAIN
 // ══════════════════════════════════════════════════════════
 async function main() {
-  await AppDataSource.initialize();
-  const qr = AppDataSource.createQueryRunner();
+  await AppDataSourceNoMigrations.initialize();
+  const qr = AppDataSourceNoMigrations.createQueryRunner();
   await qr.connect();
 
   try {
@@ -748,7 +748,7 @@ async function main() {
     throw err;
   } finally {
     await qr.release();
-    await AppDataSource.destroy();
+    await AppDataSourceNoMigrations.destroy();
   }
 }
 
