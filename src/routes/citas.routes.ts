@@ -13,5 +13,6 @@ router.put("/:id", authMiddleware, CitasController.update);
 router.put("/:id/cancelar", authMiddleware, CitasController.cancelar);
 router.put("/:id/confirmar", authMiddleware, CitasController.confirmar);
 router.put("/:id/rechazar", authMiddleware, CitasController.rechazar);
+router.delete("/:id", authMiddleware, CitasController.delete);
 
 export default router;
