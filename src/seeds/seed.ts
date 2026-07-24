@@ -26,8 +26,9 @@ function enc(plain: string): string {
 }
 
 // ── Fixed UUIDs ───────────────────────────────────────────
-const R_ADMIN  = "aaaa0001-aa00-aa00-aa00-000000000001";
-const R_PSICO  = "aaaa0001-aa00-aa00-aa00-000000000002";
+const R_ADMIN    = "aaaa0001-aa00-aa00-aa00-000000000001";
+const R_PSICO    = "aaaa0001-aa00-aa00-aa00-000000000002";
+const R_PACIENTE = "aaaa0001-aa00-aa00-aa00-000000000003";
 
 const C1 = "bbbb0002-bb00-bb00-bb00-000000000001";
 const C2 = "bbbb0002-bb00-bb00-bb00-000000000002";
@@ -53,6 +54,10 @@ for (let i = 1; i <= 16; i++) PA[i] = `eeee0005-ee00-ee00-ee00-${String(i).padSt
 // Tratamientos
 const TR: Record<number,string> = {};
 for (let i = 1; i <= 16; i++) TR[i] = `ffff0006-ff00-ff00-ff00-${String(i).padStart(12,"0")}`;
+
+// Usuarios de pacientes
+const U_PA: Record<number,string> = {};
+for (let i = 1; i <= 16; i++) U_PA[i] = `cccc0003-cc00-cc00-cc00-${String(100+i).padStart(12,"0")}`;
 
 // ── Types ─────────────────────────────────────────────────
 interface Alerta { type: string; text: string; }
@@ -82,7 +87,7 @@ function alerta(type: typeof W[number], text: string): Alerta { return { type, t
 // DIARY DATA PER PATIENT
 // ══════════════════════════════════════════════════════════
 
-// PA[1] – Luis Rodríguez – Ansiedad generalizada (MEJORANDO)
+// PA[1] – Luis Rodríguez – Ansiedad generalizada (MEJORANDO) — 4 entradas/semana
 const diarios_pa1: DiarioEntry[] = [
   {
     fecha: "2026-03-04", emocion: "Ansioso",
@@ -93,6 +98,30 @@ const diarios_pa1: DiarioEntry[] = [
     alertas:[alerta("warning","Se detectaron indicadores de estrés severo y ansiedad intensa. Se recomienda monitoreo cercano.")]
   },
   {
+    fecha: "2026-03-06", emocion: "Ansioso",
+    texto: "Pesadilla anoche sobre el trabajo y me desperté sudando. El día estuvo tenso. Practiqué la respiración antes de entrar a la oficina y bajó un poco la ansiedad pero sigue siendo muy presente. Al menos fui al trabajo hoy. Eso ya es algo.",
+    sentimiento:"desafiante", score_pos:0.1012, score_neg:0.7456, score_neu:0.1532, confianza:0.7456,
+    emocion_predo:"Ansioso",
+    palabras: kw("pesadilla","nervioso","respiración","trabajo","intenté"),
+    alertas:[alerta("warning","Síntomas nocturnos de ansiedad reportados. Evaluar calidad del sueño en próxima sesión.")]
+  },
+  {
+    fecha: "2026-03-08", emocion: "Neutral",
+    texto: "Día sin reuniones, lo que ayudó bastante. Practiqué la respiración 4-7-8 tres veces y cada vez que la usé sentí que la tensión bajaba. Creo que estoy empezando a entender cómo funciona esta herramienta. Ojalá la semana que viene sea más manejable.",
+    sentimiento:"equilibrado", score_pos:0.2789, score_neg:0.3456, score_neu:0.3755, confianza:0.3755,
+    emocion_predo:"Tranquilo",
+    palabras: kw("respiración","tranquilo","herramienta","esperanza","manejable"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-03-09", emocion: "Preocupado",
+    texto: "Mañana hay reunión grande. Ya siento la ansiedad anticipatoria. Preparé lo que voy a decir y practiqué respiración por si me siento mal. El psicólogo me dijo que planificar me da sensación de control. Veremos cómo me va.",
+    sentimiento:"desafiante", score_pos:0.1678, score_neg:0.5234, score_neu:0.3088, confianza:0.5234,
+    emocion_predo:"Preocupado",
+    palabras: kw("reunión","ansiedad","preparé","respiración","anticipación"),
+    alertas:[]
+  },
+  {
     fecha: "2026-03-11", emocion: "Preocupado",
     texto: "Sigo sintiéndome nervioso casi todo el tiempo, aunque hoy el ataque de pánico fue menos intenso. Practiqué la respiración que me enseñó el psicólogo y algo ayudó. Todavía me preocupa el trabajo, pero creo que estoy aprendiendo a manejar un poco mejor la situación. Es un proceso lento.",
     sentimiento:"desafiante", score_pos:0.1456, score_neg:0.6123, score_neu:0.2421, confianza:0.6123,
@@ -101,11 +130,59 @@ const diarios_pa1: DiarioEntry[] = [
     alertas:[alerta("warning","Persisten síntomas de ansiedad. Continuar con las técnicas aprendidas.")]
   },
   {
+    fecha: "2026-03-13", emocion: "Neutral",
+    texto: "Reunión del martes complicada pero sin ataque de pánico. Solo ansiedad moderada que manejé con respiración. Al terminar me sentí orgulloso de mí mismo. Pequeño logro pero lo siento grande.",
+    sentimiento:"equilibrado", score_pos:0.3012, score_neg:0.3678, score_neu:0.3310, confianza:0.3678,
+    emocion_predo:"Tranquilo",
+    palabras: kw("reunión","logré","respiración","orgulloso","progreso"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-03-15", emocion: "Tranquilo",
+    texto: "Dormí bien dos noches seguidas. No es poca cosa. La ansiedad sigue pero se siente más controlable. Practiqué la respiración antes de dormir como me indicó el psicólogo y eso ayuda a desconectarme.",
+    sentimiento:"equilibrado", score_pos:0.3456, score_neg:0.2789, score_neu:0.3755, confianza:0.3755,
+    emocion_predo:"Tranquilo",
+    palabras: kw("sueño","controlable","respiración","progreso","calma"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-03-16", emocion: "Neutral",
+    texto: "Me animé a quedarme en una reunión completa aunque sentía que la ansiedad subía. Usé la respiración y aguanté. El psicólogo dice que cada vez que no huyo de la situación temida, le quito poder a la ansiedad. Tiene sentido.",
+    sentimiento:"equilibrado", score_pos:0.3789, score_neg:0.2567, score_neu:0.3644, confianza:0.3789,
+    emocion_predo:"Motivado",
+    palabras: kw("aguanté","reunión","respiración","logré","técnica"),
+    alertas:[]
+  },
+  {
     fecha: "2026-03-18", emocion: "Tranquilo",
     texto: "Esta semana fue considerablemente mejor. Solo tuve un momento de nerviosismo leve que pude controlar con la respiración. Dormí mejor también. Creo que estoy progresando, aunque todavía tengo días difíciles. Me siento más esperanzado que antes.",
     sentimiento:"equilibrado", score_pos:0.3456, score_neg:0.3234, score_neu:0.3310, confianza:0.3456,
     emocion_predo:"Tranquilo",
     palabras: kw("mejor","progresando","respiración","esperanzado","control"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-03-19", emocion: "Contento",
+    texto: "Primer día en meses que llegué al trabajo sin anticipar que algo malo iba a pasar. Llegué y ya. Eso puede sonar pequeño pero para mí es enorme. La terapia está cambiando cómo pienso antes de que sucedan las cosas.",
+    sentimiento:"esperanzador", score_pos:0.5678, score_neg:0.1234, score_neu:0.3088, confianza:0.5678,
+    emocion_predo:"Motivado",
+    palabras: kw("tranquilo","llegué","trabajo","logré","cambio"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-03-21", emocion: "Tranquilo",
+    texto: "Semana bastante normal. Que algo sea 'normal' ya es un logro. Las reuniones siguen pero ya no siento el terror de antes. Solo algo de nerviosismo que se puede manejar. Creo que esto es lo que se siente cuando la ansiedad está bajo control.",
+    sentimiento:"esperanzador", score_pos:0.5234, score_neg:0.1567, score_neu:0.3199, confianza:0.5234,
+    emocion_predo:"Tranquilo",
+    palabras: kw("normal","logro","tranquilo","control","progreso"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-03-23", emocion: "Tranquilo",
+    texto: "Una compañera me preguntó si estaba tomando algo diferente porque me veía más tranquilo. Le dije que estoy en terapia. Compartirlo se sintió bien. No es algo de lo que avergonzarse. Me alegra haberlo dicho.",
+    sentimiento:"esperanzador", score_pos:0.5789, score_neg:0.0978, score_neu:0.3233, confianza:0.5789,
+    emocion_predo:"Contento",
+    palabras: kw("tranquilo","terapia","compartí","progreso","bien"),
     alertas:[]
   },
   {
@@ -117,11 +194,51 @@ const diarios_pa1: DiarioEntry[] = [
     alertas:[]
   },
   {
+    fecha: "2026-03-26", emocion: "Feliz",
+    texto: "Propuse una idea en la reunión de hoy y fue bien recibida. Hace dos meses no habría podido ni hablar en esa situación. Esto es un cambio real y concreto en mi vida. La terapia vale cada minuto invertido.",
+    sentimiento:"esperanzador", score_pos:0.7234, score_neg:0.0789, score_neu:0.1977, confianza:0.7234,
+    emocion_predo:"Feliz",
+    palabras: kw("logré","propuesta","confiado","cambio","valorado"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-03-28", emocion: "Feliz",
+    texto: "Fin de semana tranquilo. Salí a caminar sin angustia. Llamé a un amigo que hacía meses no veía. Me siento como el Luis de antes, el que podía hacer cosas sin que la ansiedad lo parara todo.",
+    sentimiento:"esperanzador", score_pos:0.7456, score_neg:0.0567, score_neu:0.1977, confianza:0.7456,
+    emocion_predo:"Contento",
+    palabras: kw("tranquilo","amigos","caminé","libre","recuperando"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-03-30", emocion: "Tranquilo",
+    texto: "Semana completa sin ataques de pánico. Ni uno. Antes eran casi diarios. Practiqué la respiración preventivamente y creo que eso ayuda a no llegar al pánico. Cada semana confirma que puedo vivir sin esta carga.",
+    sentimiento:"esperanzador", score_pos:0.7789, score_neg:0.0456, score_neu:0.1755, confianza:0.7789,
+    emocion_predo:"Motivado",
+    palabras: kw("sin_pánico","libre","respiración","logro","confianza"),
+    alertas:[]
+  },
+  {
     fecha: "2026-04-01", emocion: "Feliz",
     texto: "Me siento excelente. Esta fue la mejor semana desde que empecé el tratamiento. Fui a una reunión social que antes me habría causado un ataque de pánico y me sentí completamente tranquilo. Estoy muy agradecido por el trabajo que hemos hecho juntos. Me siento libre de la ansiedad por primera vez en mucho tiempo.",
     sentimiento:"esperanzador", score_pos:0.8234, score_neg:0.0567, score_neu:0.1199, confianza:0.8234,
     emocion_predo:"Agradecido",
     palabras: kw("excelente","tranquilo","agradecido","libre","progreso"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-04-03", emocion: "Feliz",
+    texto: "El jefe me confió liderar la próxima presentación del equipo. Hace tres meses me habría negado. Hoy dije que sí. Estoy nervioso pero es un nerviosismo sano, no paralizante. Esto es crecer.",
+    sentimiento:"esperanzador", score_pos:0.8012, score_neg:0.0678, score_neu:0.1310, confianza:0.8012,
+    emocion_predo:"Motivado",
+    palabras: kw("liderar","confiado","creciendo","nerviosismo_sano","logré"),
+    alertas:[]
+  },
+  {
+    fecha: "2026-04-05", emocion: "Feliz",
+    texto: "Fin de semana con la familia. Completamente presente. Sin pensar en el trabajo ni en qué podría salir mal. Disfruté el momento. Esta es la vida que quiero tener.",
+    sentimiento:"esperanzador", score_pos:0.8456, score_neg:0.0345, score_neu:0.1199, confianza:0.8456,
+    emocion_predo:"Feliz",
+    palabras: kw("presente","familia","disfruté","libre","bienestar"),
     alertas:[]
   },
 ];
@@ -258,7 +375,7 @@ const diarios_pa4: DiarioEntry[] = [
   },
 ];
 
-// PA[5] – Diego Morales – Post-divorcio (EMPEORA → ESTABILIZA)
+// PA[5] – Diego Morales – Post-divorcio (EMPEORA → ESTABILIZA) — 3 entradas/semana (pocas al inicio, más al final)
 const diarios_pa5: DiarioEntry[] = [
   {
     fecha:"2026-03-04", emocion:"Triste",
@@ -267,6 +384,25 @@ const diarios_pa5: DiarioEntry[] = [
     emocion_predo:"Triste",
     palabras:kw("divorcio","fracaso","hijos","tristeza","destrozado"),
     alertas:[alerta("warning","Trauma significativo relacionado con separación familiar. Requiere acompañamiento terapéutico continuo.")]
+  },
+  {
+    fecha:"2026-03-07", emocion:"Deprimido",
+    texto:"No pude dormir casi nada. Estuve revisando fotos viejas de la familia. Sé que no debería pero no puedo evitarlo. El departamento vacío es insoportable. Llevo tres días sin comer bien. Tomé unas cervezas para dormir.",
+    sentimiento:"desafiante", score_pos:0.0234, score_neg:0.8567, score_neu:0.1199, confianza:0.8567,
+    emocion_predo:"Triste",
+    palabras:kw("insomnio","solo","hijos","alcohol","dolor"),
+    alertas:[
+      alerta("critical","Se mencionan mecanismos de evitación nocivos (consumo de alcohol). Se requiere intervención inmediata."),
+      alerta("warning","Posible descuido de necesidades básicas: sueño y alimentación.")
+    ]
+  },
+  {
+    fecha:"2026-03-09", emocion:"Triste",
+    texto:"Fui a la sesión con la psicóloga. Le conté lo del alcohol. Fue difícil admitirlo. Me dijo que lo que siento es válido pero que el alcohol solo aplaza el dolor. Tiene razón. Mañana intento no beber.",
+    sentimiento:"desafiante", score_pos:0.1012, score_neg:0.7234, score_neu:0.1754, confianza:0.7234,
+    emocion_predo:"Triste",
+    palabras:kw("psicóloga","alcohol","admití","dolor","intentaré"),
+    alertas:[alerta("warning","Paciente reconoce patrón de evitación con alcohol. Monitorear evolución.")]
   },
   {
     fecha:"2026-03-11", emocion:"Deprimido",
@@ -280,12 +416,36 @@ const diarios_pa5: DiarioEntry[] = [
     ]
   },
   {
+    fecha:"2026-03-14", emocion:"Neutral",
+    texto:"Cuatro días sin beber. No es fácil pero lo estoy intentando. La psicóloga me dijo que registre lo que siento cuando tengo ganas de tomar. Hoy sentí que quería beber cuando llegué al departamento vacío y en cambio llamé a mi hermano. Ayudó.",
+    sentimiento:"desafiante", score_pos:0.1789, score_neg:0.5234, score_neu:0.2977, confianza:0.5234,
+    emocion_predo:"Triste",
+    palabras:kw("sobriedad","hermano","intentando","solo","registrando"),
+    alertas:[alerta("info","El paciente está aplicando estrategias alternativas ante el craving. Positivo.")]
+  },
+  {
     fecha:"2026-03-18", emocion:"Neutral",
     texto:"Hablé con la psicóloga sobre el alcohol y acordamos que debo parar. Lo intenté esta semana y no bebí. Fue duro pero lo logré. Los días con mis hijos son los únicos momentos buenos. Cuando no están todo se pone gris otra vez. Intento mantenerme ocupado para no caer.",
     sentimiento:"desafiante", score_pos:0.1789, score_neg:0.5678, score_neu:0.2533, confianza:0.5678,
     emocion_predo:"Triste",
     palabras:kw("hijos","logré","gris","intentando","dolor"),
     alertas:[alerta("info","El paciente muestra esfuerzo en trabajar los mecanismos de evitación. Continuar reforzando.")]
+  },
+  {
+    fecha:"2026-03-20", emocion:"Neutral",
+    texto:"Empecé a salir a caminar por las noches para no quedarme encerrado. Esta noche caminé 40 minutos. Pensé mucho pero sin llegar al desastre. La psicóloga dice que el movimiento ayuda. Creo que tiene razón.",
+    sentimiento:"equilibrado", score_pos:0.2789, score_neg:0.3678, score_neu:0.3533, confianza:0.3678,
+    emocion_predo:"Tranquilo",
+    palabras:kw("caminar","movimiento","solo","intentando","aceptando"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-22", emocion:"Tranquilo",
+    texto:"Nueve días sin alcohol. Es la racha más larga desde que empezó todo esto. Hoy cocinaron juntos mis hijos y yo algo que les gusta y me mandaron una foto. Me llenó el corazón. Hay razones para seguir.",
+    sentimiento:"equilibrado", score_pos:0.3456, score_neg:0.2789, score_neu:0.3755, confianza:0.3755,
+    emocion_predo:"Tranquilo",
+    palabras:kw("hijos","sobriedad","cocinamos","razones","avanzando"),
+    alertas:[]
   },
   {
     fecha:"2026-03-25", emocion:"Tranquilo",
@@ -296,6 +456,30 @@ const diarios_pa5: DiarioEntry[] = [
     alertas:[]
   },
   {
+    fecha:"2026-03-27", emocion:"Tranquilo",
+    texto:"Fui al gimnasio por primera vez en meses. Estuve una hora y me sentí mejor al salir. El cuerpo necesitaba moverse. Voy a intentar ir tres veces por semana. Es algo concreto en lo que enfocarme.",
+    sentimiento:"equilibrado", score_pos:0.4012, score_neg:0.2234, score_neu:0.3754, confianza:0.4012,
+    emocion_predo:"Motivado",
+    palabras:kw("gimnasio","actividad","mejor","foco","construyendo"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-29", emocion:"Tranquilo",
+    texto:"Vi una película con un compañero del trabajo. Primera salida social desde que todo pasó. Estuve presente y me reí en algunos momentos. No esperaba sentirme así. El dolor sigue pero no es lo único que existe.",
+    sentimiento:"equilibrado", score_pos:0.3789, score_neg:0.2456, score_neu:0.3755, confianza:0.3789,
+    emocion_predo:"Tranquilo",
+    palabras:kw("social","amigos","reí","presente","avanzando"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-31", emocion:"Tranquilo",
+    texto:"Hoy hablé con mis hijos por videollamada y me contaron cómo les fue en el colegio. Me siento parte de su vida aunque no estemos juntos todos los días. Eso me da mucha paz. Voy a estar bien.",
+    sentimiento:"equilibrado", score_pos:0.4234, score_neg:0.1789, score_neu:0.3977, confianza:0.4234,
+    emocion_predo:"Tranquilo",
+    palabras:kw("hijos","presente","videollamada","paz","construyendo"),
+    alertas:[]
+  },
+  {
     fecha:"2026-04-01", emocion:"Tranquilo",
     texto:"Sigo trabajando en aceptar la nueva realidad. Esta semana incluso pude tener una conversación cordial con mi ex esposa sobre los niños. Fue difícil pero necesario. Me siento más centrado. Todavía hay dolor pero ya no me consume tanto. Estoy aprendiendo a construir una nueva vida.",
     sentimiento:"equilibrado", score_pos:0.3456, score_neg:0.2789, score_neu:0.3755, confianza:0.3755,
@@ -303,9 +487,25 @@ const diarios_pa5: DiarioEntry[] = [
     palabras:kw("aceptar","centrado","construir","nueva_vida","cordial"),
     alertas:[]
   },
+  {
+    fecha:"2026-04-03", emocion:"Contento",
+    texto:"Fui al gimnasio, llamé a un amigo y leí un poco. Un día completo sin caer en el espiral. Empiezo a sentir que tengo más control sobre cómo me siento. La terapia está haciendo su trabajo.",
+    sentimiento:"esperanzador", score_pos:0.5234, score_neg:0.1456, score_neu:0.3310, confianza:0.5234,
+    emocion_predo:"Motivado",
+    palabras:kw("control","avanzando","terapia","activo","esperanza"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-04-05", emocion:"Contento",
+    texto:"Fin de semana con los chicos. Fuimos a la feria. Se rieron todo el tiempo. Verlos felices conmigo es lo más importante. Soy su papá y eso no cambia. Me siento más entero que hace un mes.",
+    sentimiento:"esperanzador", score_pos:0.5789, score_neg:0.1012, score_neu:0.3199, confianza:0.5789,
+    emocion_predo:"Feliz",
+    palabras:kw("hijos","feliz","feria","entero","padre"),
+    alertas:[]
+  },
 ];
 
-// PA[6] – Patricia Vásquez – Duelo materno (MEJORANDO LENTO)
+// PA[6] – Patricia Vásquez – Duelo materno (MEJORANDO LENTO) — 3-4 entradas/semana
 const diarios_pa6: DiarioEntry[] = [
   {
     fecha:"2026-03-04", emocion:"Triste",
@@ -316,6 +516,22 @@ const diarios_pa6: DiarioEntry[] = [
     alertas:[alerta("warning","Duelo intenso en proceso. Monitorear signos de duelo complicado.")]
   },
   {
+    fecha:"2026-03-07", emocion:"Triste",
+    texto:"Pasé el día en cama. No tenía ganas de nada. Llegó el cumpleaños de mamá y no supe cómo manejarlo. Mi hermana vino y me acompañó un rato. Sin ella no sé cómo estaría. La ausencia de mamá hoy fue particularmente pesada.",
+    sentimiento:"desafiante", score_pos:0.0456, score_neg:0.8012, score_neu:0.1532, confianza:0.8012,
+    emocion_predo:"Triste",
+    palabras:kw("cumpleaños","mamá","hermana","dolor","ausencia"),
+    alertas:[alerta("warning","Fecha significativa (cumpleaños) con alto impacto emocional. Reforzar apoyo.")]
+  },
+  {
+    fecha:"2026-03-09", emocion:"Triste",
+    texto:"Estuve mirando videos viejos de mamá que encontró mi hermana en el teléfono. Lloramos juntas pero también nos reímos de algunas cosas que decía. Es raro sentir tristeza y amor al mismo tiempo. La psicóloga dice que eso es normal en el duelo.",
+    sentimiento:"desafiante", score_pos:0.1456, score_neg:0.6234, score_neu:0.2310, confianza:0.6234,
+    emocion_predo:"Triste",
+    palabras:kw("videos","mamá","recuerdos","hermana","lloré"),
+    alertas:[]
+  },
+  {
     fecha:"2026-03-11", emocion:"Triste",
     texto:"Esta semana fuimos a visitar la tumba de mamá con mi hermana. Fue triste pero también algo hermoso, compartimos recuerdos bonitos de ella y nos reímos recordando sus chistes malos. Me hace bien hablar de ella. Todavía hay mucho dolor pero la compañía de mi hermana ayuda.",
     sentimiento:"desafiante", score_pos:0.1789, score_neg:0.6123, score_neu:0.2088, confianza:0.6123,
@@ -324,11 +540,51 @@ const diarios_pa6: DiarioEntry[] = [
     alertas:[alerta("info","La paciente está procesando el duelo de forma activa con apoyo familiar. Buen indicador.")]
   },
   {
+    fecha:"2026-03-13", emocion:"Neutral",
+    texto:"Hice una caminata corta esta mañana. Mamá siempre decía que el aire fresco despeja la mente. La extrañé al salir, pero también sentí que estaba haciendo algo que ella aprobaría. Pequeños gestos que la mantienen cerca.",
+    sentimiento:"equilibrado", score_pos:0.2234, score_neg:0.4012, score_neu:0.3754, confianza:0.4012,
+    emocion_predo:"Tranquilo",
+    palabras:kw("mamá","caminata","recuerdo","paz","pequeños_pasos"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-15", emocion:"Neutral",
+    texto:"Empecé a escribir recuerdos de mamá en un cuaderno, como me sugirió la psicóloga. Recordé el día que me enseñó a tejer y nos reímos porque lo hacía terriblemente mal. Llorando y sonriendo a la vez. Creo que esto ayuda.",
+    sentimiento:"equilibrado", score_pos:0.2789, score_neg:0.3678, score_neu:0.3533, confianza:0.3678,
+    emocion_predo:"Tranquilo",
+    palabras:kw("cuaderno","mamá","recuerdos","escribiendo","terapia"),
+    alertas:[]
+  },
+  {
     fecha:"2026-03-18", emocion:"Neutral",
     texto:"Empecé a cocinar las recetas de mamá esta semana. Cuando hice su sopa de maní lloré pero también sonreí recordándola. Creo que encontrar formas de mantener su presencia en mi vida me ayuda. La psicóloga dice que esto es parte sana del duelo. Me siento un poco más en paz.",
     sentimiento:"equilibrado", score_pos:0.2456, score_neg:0.3789, score_neu:0.3755, confianza:0.3789,
     emocion_predo:"Tranquilo",
     palabras:kw("mamá","recuerdos","paz","cocinando","sonreí"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-20", emocion:"Tranquilo",
+    texto:"Llamé a una amiga de mamá que hacía tiempo no contactaba. Hablamos por una hora sobre ella. Fue bonito escuchar cosas que no sabía. Mi mamá tocó muchas vidas. Me siento orgullosa de ser su hija.",
+    sentimiento:"equilibrado", score_pos:0.3567, score_neg:0.2789, score_neu:0.3644, confianza:0.3644,
+    emocion_predo:"Tranquilo",
+    palabras:kw("mamá","amiga","recuerdos","orgullosa","conexión"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-22", emocion:"Tranquilo",
+    texto:"Hoy puse una foto de mamá en el trabajo. Antes me costaba verla. Hoy la miré y sonreí. Una compañera me preguntó quién era y le conté sobre ella con cariño, no con tristeza. Eso se siente diferente.",
+    sentimiento:"equilibrado", score_pos:0.3789, score_neg:0.2456, score_neu:0.3755, confianza:0.3789,
+    emocion_predo:"Tranquilo",
+    palabras:kw("foto","mamá","sonreí","trabajo","recordando"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-24", emocion:"Neutral",
+    texto:"Tuve un día difícil hoy sin razón aparente. Solo la tristeza volvió fuerte. Me permití sentirla, como dice la psicóloga, sin intentar ahuyentarla. Lloré un rato y luego llamé a mi hermana. Mañana será mejor.",
+    sentimiento:"equilibrado", score_pos:0.2012, score_neg:0.4234, score_neu:0.3754, confianza:0.4234,
+    emocion_predo:"Triste",
+    palabras:kw("tristeza","hermana","lloré","permitiéndome","mañana"),
     alertas:[]
   },
   {
@@ -340,11 +596,35 @@ const diarios_pa6: DiarioEntry[] = [
     alertas:[]
   },
   {
+    fecha:"2026-03-27", emocion:"Tranquilo",
+    texto:"Segunda semana en el trabajo. Ya me siento más cómoda. Almorcé con colegas y hablé de cosas normales. No todo fue sobre el duelo. Fue un descanso. La vida tiene muchos colores y puedo ir recuperándolos poco a poco.",
+    sentimiento:"equilibrado", score_pos:0.4012, score_neg:0.2234, score_neu:0.3754, confianza:0.4012,
+    emocion_predo:"Tranquilo",
+    palabras:kw("trabajo","colegas","normalidad","recuperando","paz"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-29", emocion:"Tranquilo",
+    texto:"Terminé el cuaderno de recuerdos de mamá. Lo leí completo. Me hizo llorar y reír. Voy a guardarlo como un tesoro. La psicóloga dice que es una forma hermosa de honrar su memoria. Estoy de acuerdo.",
+    sentimiento:"esperanzador", score_pos:0.4234, score_neg:0.2012, score_neu:0.3754, confianza:0.4234,
+    emocion_predo:"Agradecido",
+    palabras:kw("cuaderno","mamá","recuerdos","tesoro","honrar"),
+    alertas:[]
+  },
+  {
     fecha:"2026-04-01", emocion:"Contento",
     texto:"Hoy es el primer día que sonreí genuinamente pensando en mamá sin que me aplastara la tristeza. Recordé una historia graciosa que le pasó y me reí sola. Creo que estoy aprendiendo a llevar el duelo de una manera más sana. La quiero y la extraño, pero estoy bien.",
     sentimiento:"esperanzador", score_pos:0.4789, score_neg:0.2234, score_neu:0.2977, confianza:0.4789,
     emocion_predo:"Agradecido",
     palabras:kw("mamá","sonreí","bien","sana","recuerdos"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-04-04", emocion:"Contento",
+    texto:"Preparé la sopa de maní de mamá para mis sobrinos. Les encantó. Les conté que era la receta de su abuela y sus caritas se iluminaron. Así la mantenemos viva. Eso me llena de paz.",
+    sentimiento:"esperanzador", score_pos:0.5456, score_neg:0.1234, score_neu:0.3310, confianza:0.5456,
+    emocion_predo:"Feliz",
+    palabras:kw("mamá","sobrinos","receta","memoria","paz"),
     alertas:[]
   },
 ];
@@ -437,7 +717,7 @@ const diarios_pa8: DiarioEntry[] = [
   },
 ];
 
-// PA[9] – Lucía Méndez – Imagen corporal (MIXTO)
+// PA[9] – Lucía Méndez – Imagen corporal (MIXTO) — 4 entradas/semana, altibajos persistentes
 const diarios_pa9: DiarioEntry[] = [
   {
     fecha:"2026-03-04", emocion:"Triste",
@@ -448,11 +728,59 @@ const diarios_pa9: DiarioEntry[] = [
     alertas:[alerta("warning","Patrones alimentarios restrictivos detectados. Requiere evaluación y seguimiento especializado.")]
   },
   {
+    fecha:"2026-03-06", emocion:"Ansioso",
+    texto:"Fui a comer con amigas y fue muy difícil. Estuve calculando calorías mentalmente todo el tiempo. Pedí la ensalada más pequeña del menú. Mis amigas no se dieron cuenta pero yo sé que no comí lo suficiente. Me siento atrapada en mi propio cerebro.",
+    sentimiento:"desafiante", score_pos:0.0789, score_neg:0.7012, score_neu:0.2199, confianza:0.7012,
+    emocion_predo:"Ansioso",
+    palabras:kw("calorías","restricción","atrapada","comida","ansiedad"),
+    alertas:[alerta("warning","Pensamientos obsesivos relacionados con la comida en contextos sociales.")]
+  },
+  {
+    fecha:"2026-03-08", emocion:"Neutral",
+    texto:"Hoy intenté desayunar bien. Huevos y tostadas. Tardé 20 minutos en prepararme para comerlo. Lo logré. El psicólogo dice que cada comida completa es una victoria. Intento verlo así aunque el pensamiento de culpa sigue apareciendo.",
+    sentimiento:"equilibrado", score_pos:0.2234, score_neg:0.4234, score_neu:0.3532, confianza:0.4234,
+    emocion_predo:"Tranquilo",
+    palabras:kw("desayuné","intenté","logré","victoria","culpa"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-10", emocion:"Triste",
+    texto:"Me miré en el espejo y me bloqueé. No pude ir al gimnasio. Me quedé en casa. Días así me hacen dudar si voy a poder superar esto. El psicólogo dice que la distorsión de imagen es parte del trastorno. Racionalmente lo entiendo, emocionalmente es otra cosa.",
+    sentimiento:"desafiante", score_pos:0.0678, score_neg:0.6789, score_neu:0.2533, confianza:0.6789,
+    emocion_predo:"Triste",
+    palabras:kw("espejo","distorsión","bloqueada","difícil","duda"),
+    alertas:[alerta("warning","Episodio de evitación por distorsión de imagen corporal. Monitorear frecuencia.")]
+  },
+  {
     fecha:"2026-03-11", emocion:"Neutral",
     texto:"El psicólogo me pidió que lleve un diario alimentario. Es incómodo ver escrito lo poco que como. Hoy intenté comer tres comidas completas y lo logré. Me sentí culpable después de cenar, pero practiqué los ejercicios de mindfulness y mejoró. Es un proceso muy difícil.",
     sentimiento:"equilibrado", score_pos:0.2234, score_neg:0.4567, score_neu:0.3199, confianza:0.4567,
     emocion_predo:"Tranquilo",
     palabras:kw("intenté","comida","mindfulness","proceso","logré"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-13", emocion:"Tranquilo",
+    texto:"Dos días comiendo tres comidas. Es un logro para mí. El mindfulness después de cenar está ayudando a manejar la culpa. No desaparece del todo pero es más manejable. Pequeños progresos.",
+    sentimiento:"equilibrado", score_pos:0.3012, score_neg:0.3456, score_neu:0.3532, confianza:0.3456,
+    emocion_predo:"Tranquilo",
+    palabras:kw("tres_comidas","mindfulness","culpa","progreso","manejable"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-15", emocion:"Triste",
+    texto:"Un familiar me hizo un comentario sobre mi aspecto físico. No fue con mala intención pero me destruyó por dentro. Pasé la tarde llorando. Sé que es una distorsión pero el dolor es muy real.",
+    sentimiento:"desafiante", score_pos:0.0789, score_neg:0.6789, score_neu:0.2422, confianza:0.6789,
+    emocion_predo:"Triste",
+    palabras:kw("comentario","peso","dolor","lloré","distorsión"),
+    alertas:[alerta("warning","Impacto emocional significativo ante comentarios sobre apariencia. Trabajar en sesión.")]
+  },
+  {
+    fecha:"2026-03-16", emocion:"Neutral",
+    texto:"Hablé con el psicólogo por teléfono sobre lo de ayer. Me ayudó a ponerlo en perspectiva. No comí mucho pero sí comí. Mañana lo intento mejor. No me rindo.",
+    sentimiento:"equilibrado", score_pos:0.2456, score_neg:0.4012, score_neu:0.3532, confianza:0.4012,
+    emocion_predo:"Tranquilo",
+    palabras:kw("psicólogo","perspectiva","intentaré","resiliencia","no_me_rindo"),
     alertas:[]
   },
   {
@@ -464,6 +792,30 @@ const diarios_pa9: DiarioEntry[] = [
     alertas:[alerta("warning","Recaída en patrones alimentarios restrictivos. Reforzar estrategias de afrontamiento.")]
   },
   {
+    fecha:"2026-03-20", emocion:"Neutral",
+    texto:"Hoy fui a la sesión y trabajamos el episodio de la recaída. El psicólogo me hizo ver que antes de la recaída hubo señales que ignoré. Estoy aprendiendo a identificarlas para actuar antes. Tres comidas hoy.",
+    sentimiento:"equilibrado", score_pos:0.2789, score_neg:0.3678, score_neu:0.3533, confianza:0.3678,
+    emocion_predo:"Tranquilo",
+    palabras:kw("sesión","aprendiendo","señales","tres_comidas","recuperación"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-21", emocion:"Triste",
+    texto:"Día difícil. Me pesé dos veces. Sigo luchando con esta compulsión. Al menos fueron dos y no cuatro como antes. El psicólogo dice que eso también es progreso. Intento creerlo.",
+    sentimiento:"desafiante", score_pos:0.1234, score_neg:0.5678, score_neu:0.3088, confianza:0.5678,
+    emocion_predo:"Triste",
+    palabras:kw("pesé","compulsión","difícil","progreso","intentando"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-23", emocion:"Tranquilo",
+    texto:"Hoy no me pesé. Por primera vez en semanas. Me costó mucho pero lo hice. La báscula sigue ahí, pero la ignoré. Pequeña victoria enorme para mí. Lo anoté en mi diario alimentario.",
+    sentimiento:"equilibrado", score_pos:0.3789, score_neg:0.2234, score_neu:0.3977, confianza:0.3789,
+    emocion_predo:"Motivado",
+    palabras:kw("báscula","no_me_pesé","victoria","logro","diario"),
+    alertas:[]
+  },
+  {
     fecha:"2026-03-25", emocion:"Tranquilo",
     texto:"Mejor semana después de la recaída. Hablé con el psicólogo sobre el comentario que me afectó y trabajamos en no darle tanto poder a lo que dicen los demás. Comí bien casi todos los días. Mi relación con la comida es todavía complicada pero estoy trabajando activamente.",
     sentimiento:"equilibrado", score_pos:0.3456, score_neg:0.3234, score_neu:0.3310, confianza:0.3456,
@@ -472,11 +824,51 @@ const diarios_pa9: DiarioEntry[] = [
     alertas:[]
   },
   {
+    fecha:"2026-03-27", emocion:"Neutral",
+    texto:"Salí a almorzar sola y pedí lo que quería comer, no lo menos calórico del menú. Fue un esfuerzo consciente y lo hice. Estuve incómoda al principio pero lo disfruté. Eso no hubiera pasado hace un mes.",
+    sentimiento:"equilibrado", score_pos:0.3789, score_neg:0.2456, score_neu:0.3755, confianza:0.3789,
+    emocion_predo:"Tranquilo",
+    palabras:kw("almuerzo","elegí","logré","incómoda","progreso"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-28", emocion:"Tranquilo",
+    texto:"Tres días seguidos sin pesarme. El psicólogo sugirió guardar la báscula en el armario para que no sea tan accesible. Lo hice hoy. Pequeño cambio, gran significado.",
+    sentimiento:"equilibrado", score_pos:0.4012, score_neg:0.2012, score_neu:0.3976, confianza:0.4012,
+    emocion_predo:"Motivado",
+    palabras:kw("báscula","guardé","cambio","logro","libertad"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-30", emocion:"Tranquilo",
+    texto:"Semana bastante regular en alimentación. Hubo un día difícil pero lo manejé mejor que antes. El patrón mixto continúa pero los días buenos son más que hace un mes. Eso cuenta.",
+    sentimiento:"equilibrado", score_pos:0.3567, score_neg:0.2789, score_neu:0.3644, confianza:0.3644,
+    emocion_predo:"Tranquilo",
+    palabras:kw("regular","mejorando","patrón","avanzando","comida"),
+    alertas:[]
+  },
+  {
     fecha:"2026-04-01", emocion:"Neutral",
     texto:"Esta semana comí bien la mayoría de los días. Hubo un día donde el pensamiento restrictivo fue muy fuerte pero usé las técnicas y pude comer normalmente. Me siento más fuerte que hace un mes aunque sé que queda mucho trabajo. Agradezco el apoyo de la terapia.",
     sentimiento:"equilibrado", score_pos:0.3789, score_neg:0.2789, score_neu:0.3422, confianza:0.3789,
     emocion_predo:"Motivado",
     palabras:kw("fuerte","técnicas","progreso","comida","agradecida"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-04-03", emocion:"Tranquilo",
+    texto:"Cocinaron en casa y comí sin calcular. Solo comí. Es algo que antes era impensable. El psicólogo dice que estoy internalizando los cambios. Lo creo. Todavía queda camino pero lo que hay detrás también es real.",
+    sentimiento:"equilibrado", score_pos:0.4012, score_neg:0.2012, score_neu:0.3976, confianza:0.4012,
+    emocion_predo:"Tranquilo",
+    palabras:kw("cocinaron","comí","internalizando","cambio","progreso"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-04-05", emocion:"Tranquilo",
+    texto:"Hoy me miré en el espejo y no me insulté. Solo me vi. Eso también es progreso. El trabajo en imagen corporal es lento pero está pasando. Tengo esperanza.",
+    sentimiento:"equilibrado", score_pos:0.4234, score_neg:0.1789, score_neu:0.3977, confianza:0.4234,
+    emocion_predo:"Motivado",
+    palabras:kw("espejo","imagen","progreso","esperanza","aceptación"),
     alertas:[]
   },
 ];
@@ -525,7 +917,7 @@ const diarios_pa10: DiarioEntry[] = [
   },
 ];
 
-// PA[11] – Isabel Romero – Autoestima/relaciones (MEJORANDO)
+// PA[11] – Isabel Romero – Autoestima/relaciones (MEJORANDO) — 4 entradas/semana, mejora sostenida
 const diarios_pa11: DiarioEntry[] = [
   {
     fecha:"2026-03-04", emocion:"Triste",
@@ -536,11 +928,59 @@ const diarios_pa11: DiarioEntry[] = [
     alertas:[alerta("info","Patrones relacionales disfuncionales identificados. Trabajo terapéutico en autoestima recomendado.")]
   },
   {
+    fecha:"2026-03-06", emocion:"Triste",
+    texto:"Seguí pensando en la ruptura. El psicólogo me preguntó en sesión qué fue lo que yo necesitaba en esa relación y me di cuenta de que nunca me lo pregunté. Siempre pensé en el otro. Eso es un problema grande. Quiero cambiar.",
+    sentimiento:"desafiante", score_pos:0.1234, score_neg:0.5678, score_neu:0.3088, confianza:0.5678,
+    emocion_predo:"Triste",
+    palabras:kw("sesión","necesidades","ruptura","reflexión","cambio"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-08", emocion:"Neutral",
+    texto:"Hoy hice una lista de cosas que me gustan a mí, solo a mí. Cosas que no hago porque al otro no le interesaban. Hay bastante en esa lista. El psicólogo dice que eso es recuperar mi identidad. Me gusta esa idea.",
+    sentimiento:"equilibrado", score_pos:0.3012, score_neg:0.2789, score_neu:0.4199, confianza:0.4199,
+    emocion_predo:"Tranquilo",
+    palabras:kw("identidad","lista","gustos","recuperando","yo"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-10", emocion:"Neutral",
+    texto:"Retomé la lectura. Hace años que no leía por placer. Esta semana terminé los primeros dos capítulos de un libro que quería leer desde hace tiempo. Pequeño gesto, pero sentí que lo hice para mí.",
+    sentimiento:"equilibrado", score_pos:0.3456, score_neg:0.2012, score_neu:0.4532, confianza:0.4532,
+    emocion_predo:"Tranquilo",
+    palabras:kw("lectura","para_mí","placer","recuperando","identidad"),
+    alertas:[]
+  },
+  {
     fecha:"2026-03-11", emocion:"Neutral",
     texto:"Trabajé en identificar mis propias necesidades esta semana. Me di cuenta de que rara vez pienso en lo que yo quiero. Siempre me adapto al otro. Es revelador y un poco triste a la vez. Pero también me da esperanza de que puedo cambiar este patrón.",
     sentimiento:"equilibrado", score_pos:0.3234, score_neg:0.3456, score_neu:0.3310, confianza:0.3456,
     emocion_predo:"Tranquilo",
     palabras:kw("necesidades","revelador","esperanza","cambio","trabajando"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-13", emocion:"Tranquilo",
+    texto:"Alguien me invitó a salir y dije que no porque no tenía ganas. Antes habría ido igual para no decepcionarlos. Esta vez me escuché a mí misma. Sensación rara pero no mala. Creo que es lo que se siente tener límites.",
+    sentimiento:"esperanzador", score_pos:0.4789, score_neg:0.1789, score_neu:0.3422, confianza:0.4789,
+    emocion_predo:"Motivado",
+    palabras:kw("límites","no","escuché","logré","auténtica"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-15", emocion:"Tranquilo",
+    texto:"Salida sola al mercado, al café, a un parque. Todo el sábado para mí. Antes eso me habría parecido triste. Hoy lo sentí como un regalo. Me gusta mi compañía más de lo que pensaba.",
+    sentimiento:"esperanzador", score_pos:0.5234, score_neg:0.1012, score_neu:0.3754, confianza:0.5234,
+    emocion_predo:"Contento",
+    palabras:kw("sola","disfruté","compañía","regalo","para_mí"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-16", emocion:"Tranquilo",
+    texto:"Reflexioné sobre qué tipo de relación quiero tener en el futuro. Escribí características concretas. No bajé el estándar para encajar. Quiero alguien que me vea como soy, no como ellos quieren que sea.",
+    sentimiento:"esperanzador", score_pos:0.5678, score_neg:0.0978, score_neu:0.3344, confianza:0.5678,
+    emocion_predo:"Motivado",
+    palabras:kw("relación","estándar","auténtica","valores","futura"),
     alertas:[]
   },
   {
@@ -552,6 +992,30 @@ const diarios_pa11: DiarioEntry[] = [
     alertas:[]
   },
   {
+    fecha:"2026-03-20", emocion:"Contento",
+    texto:"Me puse ropa que me gusta aunque no le habría gustado a mi ex. Suena tonto pero es liberador. Ya no me visto pensando en lo que otro piensa. Me visto pensando en mí.",
+    sentimiento:"esperanzador", score_pos:0.6789, score_neg:0.0789, score_neu:0.2422, confianza:0.6789,
+    emocion_predo:"Feliz",
+    palabras:kw("libre","auténtica","para_mí","ropa","logré"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-22", emocion:"Contento",
+    texto:"Tuve un momento en que alguien intentó hacerme sentir menos y no lo permití. Le dije con calma que ese comentario no me parecía justo. Antes me hubiera tragado todo. Hoy no. Eso es un cambio real.",
+    sentimiento:"esperanzador", score_pos:0.7012, score_neg:0.0789, score_neu:0.2199, confianza:0.7012,
+    emocion_predo:"Motivado",
+    palabras:kw("límites","asertividad","logré","cambio","voz_propia"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-24", emocion:"Contento",
+    texto:"El psicólogo me dijo que ha notado un cambio significativo en cómo hablo de mí misma. Antes decía 'supongo que merezco algo mejor', ahora digo 'merezco algo mejor'. Que alguien más lo note también me confirma que voy por buen camino.",
+    sentimiento:"esperanzador", score_pos:0.7234, score_neg:0.0567, score_neu:0.2199, confianza:0.7234,
+    emocion_predo:"Motivado",
+    palabras:kw("autoestima","cambio","psicólogo","merezco","progreso"),
+    alertas:[]
+  },
+  {
     fecha:"2026-03-25", emocion:"Contento",
     texto:"Esta semana pasé tiempo sola de manera intencional y lo disfruté. Fui al cine sola, algo que antes me parecía inconcebible. Me sentí bien conmigo misma. Creo que estoy aprendiendo a ser mi propia compañía. La autoestima se construye lentamente pero se siente el progreso.",
     sentimiento:"esperanzador", score_pos:0.7234, score_neg:0.0789, score_neu:0.1977, confianza:0.7234,
@@ -560,11 +1024,51 @@ const diarios_pa11: DiarioEntry[] = [
     alertas:[]
   },
   {
+    fecha:"2026-03-27", emocion:"Feliz",
+    texto:"Empecé a cocinar cosas que yo quiero comer, no lo que le gustaba al otro. Esta semana preparé una receta que siempre quise probar. Quedó rico y lo disfruté sola con música que también me gusta a mí. Así debería ser.",
+    sentimiento:"esperanzador", score_pos:0.7678, score_neg:0.0456, score_neu:0.1866, confianza:0.7678,
+    emocion_predo:"Feliz",
+    palabras:kw("para_mí","cocinando","disfruté","libre","auténtica"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-29", emocion:"Feliz",
+    texto:"Alguien me preguntó a qué me dedico y lo respondí con orgullo. Antes minimizaba lo que hago para no parecer arrogante. Hoy lo dije con confianza. El psicólogo dice que eso es autoestima funcional. Lo siento.",
+    sentimiento:"esperanzador", score_pos:0.7789, score_neg:0.0456, score_neu:0.1755, confianza:0.7789,
+    emocion_predo:"Motivado",
+    palabras:kw("orgullo","confianza","autoestima","auténtica","logré"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-31", emocion:"Feliz",
+    texto:"Semana excelente. Sin episodios de ceder ante presión social. Me siento más yo que hace tiempo. Estoy construyendo algo nuevo desde adentro y se siente sólido.",
+    sentimiento:"esperanzador", score_pos:0.8012, score_neg:0.0345, score_neu:0.1643, confianza:0.8012,
+    emocion_predo:"Feliz",
+    palabras:kw("excelente","auténtica","sólido","construyendo","bienestar"),
+    alertas:[]
+  },
+  {
     fecha:"2026-04-01", emocion:"Feliz",
     texto:"Empecé a salir con amigos que había descuidado. Pasé una tarde maravillosa con tres amigas que hacía meses no veía. Me reí mucho y me sentí querida y valorada tal como soy. No necesitaba cambiarme para gustarles. Eso es lo que quiero en mis relaciones. Estoy en el camino correcto.",
     sentimiento:"esperanzador", score_pos:0.8012, score_neg:0.0567, score_neu:0.1421, confianza:0.8012,
     emocion_predo:"Agradecido",
     palabras:kw("amigos","valorada","querida","auténtica","feliz"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-04-03", emocion:"Feliz",
+    texto:"Le conté a una amiga sobre la terapia y lo que estoy trabajando. No tenía vergüenza. Me escuchó con atención y me dijo que me nota diferente. Mejor. Que alguien que me conoce lo vea me da mucha satisfacción.",
+    sentimiento:"esperanzador", score_pos:0.8234, score_neg:0.0345, score_neu:0.1421, confianza:0.8234,
+    emocion_predo:"Feliz",
+    palabras:kw("terapia","amiga","diferente","mejor","satisfacción"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-04-05", emocion:"Feliz",
+    texto:"Hoy simplemente me siento bien. Sin necesidad de validación de nadie. Solo me siento en paz conmigo misma. No recordaba cuándo fue la última vez que sentí esto. Quiero cuidar este estado.",
+    sentimiento:"esperanzador", score_pos:0.8567, score_neg:0.0234, score_neu:0.1199, confianza:0.8567,
+    emocion_predo:"Feliz",
+    palabras:kw("paz","bienestar","para_mí","logré","completa"),
     alertas:[]
   },
 ];
@@ -751,7 +1255,7 @@ const diarios_pa15: DiarioEntry[] = [
   },
 ];
 
-// PA[16] – Tomás Gutiérrez – Trastorno de ajuste (ESTABLE)
+// PA[16] – Tomás Gutiérrez – Trastorno de ajuste (ESTABLE) — 3 entradas/semana, uso irregular (no cumple siempre)
 const diarios_pa16: DiarioEntry[] = [
   {
     fecha:"2026-03-04", emocion:"Triste",
@@ -762,11 +1266,35 @@ const diarios_pa16: DiarioEntry[] = [
     alertas:[alerta("info","Adulto joven en etapa de transición con dificultades de identidad y propósito. Enfocar en exploración vocacional.")]
   },
   {
+    fecha:"2026-03-08", emocion:"Neutral",
+    texto:"Pasé la semana sin hacer mucho. Vi series, dormí tarde. El psicólogo me pidió que escriba aquí pero me cuesta hacerlo cuando no tengo nada positivo que reportar. Hoy lo hago aunque sea para decir que estoy estancado.",
+    sentimiento:"desafiante", score_pos:0.1012, score_neg:0.5234, score_neu:0.3754, confianza:0.5234,
+    emocion_predo:"Triste",
+    palabras:kw("estancado","rutina","perdido","sin_ganas","escribiendo"),
+    alertas:[]
+  },
+  {
     fecha:"2026-03-11", emocion:"Neutral",
     texto:"Hablé con el psicólogo sobre mis intereses reales. Cuando dejo de pensar en lo que debería hacer y pienso en lo que me gusta, aparece el diseño gráfico. Siempre me ha gustado pero nunca lo tomé en serio. El psicólogo me hizo ver que eso es una creencia limitante.",
     sentimiento:"equilibrado", score_pos:0.3789, score_neg:0.2789, score_neu:0.3422, confianza:0.3789,
     emocion_predo:"Tranquilo",
     palabras:kw("diseño","intereses","reflexión","creencia","descubriendo"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-14", emocion:"Neutral",
+    texto:"Vi un documental sobre diseñadores gráficos. Me quedé viendo dos horas sin aburrirme. Algo así no me pasaba hace tiempo. El psicólogo tiene razón en que debería explorar más ese camino.",
+    sentimiento:"equilibrado", score_pos:0.3456, score_neg:0.2012, score_neu:0.4532, confianza:0.4532,
+    emocion_predo:"Tranquilo",
+    palabras:kw("diseño","documental","interés","descubriendo","posibilidad"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-16", emocion:"Neutral",
+    texto:"Busqué tutoriales de diseño gráfico. Hay mucho material gratuito. Empecé uno básico y lo entendí fácil. Tal vez tengo algo de aptitud para esto. Voy a seguir explorando.",
+    sentimiento:"equilibrado", score_pos:0.3789, score_neg:0.1789, score_neu:0.4422, confianza:0.4422,
+    emocion_predo:"Tranquilo",
+    palabras:kw("tutoriales","diseño","aptitud","explorando","comenzando"),
     alertas:[]
   },
   {
@@ -778,6 +1306,14 @@ const diarios_pa16: DiarioEntry[] = [
     alertas:[]
   },
   {
+    fecha:"2026-03-22", emocion:"Tranquilo",
+    texto:"Hice mi primer diseño real, un cartel para una actividad del barrio. Me lo pidieron y lo hice gratis. Quedó bien. Que alguien confíe en mí para algo se sintió extrañamente bien.",
+    sentimiento:"esperanzador", score_pos:0.5234, score_neg:0.1012, score_neu:0.3754, confianza:0.5234,
+    emocion_predo:"Contento",
+    palabras:kw("diseño","cartel","logré","confianza","propósito"),
+    alertas:[]
+  },
+  {
     fecha:"2026-03-25", emocion:"Tranquilo",
     texto:"Me inscribí en un curso de diseño gráfico online. Tuve una conversación honesta con mis papás sobre mi plan y lo recibieron mejor de lo esperado. Mi papá dijo que si es lo que quiero, me apoya. Eso significó mucho. Me siento con más dirección ahora.",
     sentimiento:"esperanzador", score_pos:0.6234, score_neg:0.0789, score_neu:0.2977, confianza:0.6234,
@@ -786,11 +1322,35 @@ const diarios_pa16: DiarioEntry[] = [
     alertas:[]
   },
   {
+    fecha:"2026-03-29", emocion:"Tranquilo",
+    texto:"Completé la primera unidad del curso. Es más estructurado de lo que esperaba. Me gusta que hay tareas concretas. Con la universidad me perdí porque sentía que no había dirección. Esto se siente diferente.",
+    sentimiento:"esperanzador", score_pos:0.5789, score_neg:0.1012, score_neu:0.3199, confianza:0.5789,
+    emocion_predo:"Motivado",
+    palabras:kw("curso","estructura","dirección","diferente","avanzando"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-03-31", emocion:"Contento",
+    texto:"Hice un logo para un emprendimiento de una amiga. Lo publicó en redes y tuvo buena respuesta. Me citaron como diseñador. Primera vez que alguien me llama así. Me gusta cómo suena.",
+    sentimiento:"esperanzador", score_pos:0.6789, score_neg:0.0567, score_neu:0.2644, confianza:0.6789,
+    emocion_predo:"Feliz",
+    palabras:kw("logo","diseñador","reconocimiento","identidad","logré"),
+    alertas:[]
+  },
+  {
     fecha:"2026-04-01", emocion:"Contento",
     texto:"Completé el primer módulo del curso de diseño. Hice mi primer logo y quedó bien. Lo publiqué en una comunidad online y recibí comentarios positivos de personas que no me conocen. Eso me confirmó que tengo talento y que vale la pena seguir. Me siento con propósito.",
     sentimiento:"esperanzador", score_pos:0.7456, score_neg:0.0567, score_neu:0.1977, confianza:0.7456,
     emocion_predo:"Motivado",
     palabras:kw("diseño","logré","talento","propósito","motivado"),
+    alertas:[]
+  },
+  {
+    fecha:"2026-04-05", emocion:"Contento",
+    texto:"Semana productiva. Avancé en el curso, hice un encargo para conocidos. Mis papás me ven más activo. Ya no me comparo tanto con mis amigos. Estoy construyendo mi propio camino y eso vale.",
+    sentimiento:"esperanzador", score_pos:0.7234, score_neg:0.0456, score_neu:0.2310, confianza:0.7234,
+    emocion_predo:"Motivado",
+    palabras:kw("productivo","diseño","camino_propio","propósito","avanzando"),
     alertas:[]
   },
 ];
@@ -837,8 +1397,9 @@ async function main() {
     await qr.query(`
       INSERT INTO roles (id, name) VALUES
       ($1, 'admin'),
-      ($2, 'psicologo')
-    `, [R_ADMIN, R_PSICO]);
+      ($2, 'psicologo'),
+      ($3, 'paciente')
+    `, [R_ADMIN, R_PSICO, R_PACIENTE]);
 
     // ── 2. Consultorios ─────────────────────────────────
     await qr.query(`
@@ -852,13 +1413,14 @@ async function main() {
     const SALT = 10;
     const hash = (pw: string) => bcrypt.hash(pw, SALT);
 
-    const [hAdmin, hCmend, hAflor, hRvarg, hMquisp, hJtorr] = await Promise.all([
+    const [hAdmin, hCmend, hAflor, hRvarg, hMquisp, hJtorr, hPaciente] = await Promise.all([
       hash("Admin@2024!"),
       hash("Mendoza@2024!"),
       hash("Flores@2024!"),
       hash("Vargas@2024!"),
       hash("Quispe@2024!"),
       hash("Torres@2024!"),
+      hash("Paciente@2024!"),
     ]);
 
     await qr.query(`
@@ -874,6 +1436,20 @@ async function main() {
       hAdmin, hCmend, hAflor, hRvarg, hMquisp, hJtorr,
       R_ADMIN, R_PSICO,
     ]);
+
+    // ── 3b. Usuarios Pacientes ──────────────────────────
+    const pacienteUsernames = [
+      'lrodriguez','vcardenas','mherrera','saguilar',
+      'dmorales','pvasquez','cdelgado','acastro',
+      'lmendez','fortega','iromero','rpaz',
+      'nflores','kmamani','dchavez','tgutierrez',
+    ];
+    for (let i = 1; i <= 16; i++) {
+      await qr.query(`
+        INSERT INTO usuarios (id, user_name, password_hash, role_id)
+        VALUES ($1,$2,$3,$4)
+      `, [U_PA[i], pacienteUsernames[i-1], hPaciente, R_PACIENTE]);
+    }
 
     // ── 4. Psicólogos ───────────────────────────────────
     await qr.query(`
@@ -940,13 +1516,14 @@ async function main() {
       [PA[16],PS_JTORR,'Tomás','Gutiérrez Rada','2003-04-02','Masculino','Secundaria','Desempleado','Soltero','+591 70016161','5003016'],
     ];
 
-    for (const [id, psico_id, nom, ape, fnac, sexo, escol, ocup, eciv, tel, ci] of pacientes) {
+    for (let i = 0; i < pacientes.length; i++) {
+      const [id, psico_id, nom, ape, fnac, sexo, escol, ocup, eciv, tel, ci] = pacientes[i];
       await qr.query(`
         INSERT INTO pacientes
-          (id, psicologo_id, nombres, apellidos, fecha_nacimiento, sexo,
+          (id, usuario_id, psicologo_id, nombres, apellidos, fecha_nacimiento, sexo,
            escolaridad, ocupacion, estado_civil, telefono, ci, fecha_ingreso)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'2026-03-01')
-      `, [id, psico_id, nom, ape, fnac, sexo, escol, ocup, eciv, tel, ci]);
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,'2026-03-01')
+      `, [id, U_PA[i+1], psico_id, nom, ape, fnac, sexo, escol, ocup, eciv, tel, ci]);
     }
 
     // ── 6. Antecedentes ─────────────────────────────────
@@ -1014,6 +1591,7 @@ async function main() {
       tipo: string; sesiones: number;
       obs: string; hipotesis: string; diagnostico: string;
       objetivo: string; plan: string;
+      tareas: string; tareasList: string[];
     };
     const tratamientos: TrRow[] = [
       {id:TR[1],pacId:PA[1],psId:PS_CMEND,tipo:'Cognitivo-Conductual',sesiones:16,
@@ -1021,97 +1599,129 @@ async function main() {
        hipotesis:'Trastorno de ansiedad generalizada con ataques de pánico situacionales.',
        diagnostico:'TAG con componente fóbico laboral.',
        objetivo:'Reducir frecuencia e intensidad de ataques de pánico. Desarrollar tolerancia a situaciones de incertidumbre.',
-       plan:'Psicoeducación, reestructuración cognitiva, técnicas de respiración y exposición gradual.'},
+       plan:'Psicoeducación, reestructuración cognitiva, técnicas de respiración y exposición gradual.',
+       tareas:'Practicar respiración 4-7-8 diariamente. Registrar pensamientos ansiosos en diario. Exposición gradual a situaciones laborales.',
+       tareasList:['ejercicios_respiracion','registro_actividades','higiene_sueno','Diario emocional']},
       {id:TR[2],pacId:PA[2],psId:PS_CMEND,tipo:'Cognitivo-Conductual',sesiones:20,
        obs:'Paciente con episodio depresivo mayor. Anhedonia, anergia, isolamiento social.',
        hipotesis:'Episodio depresivo mayor de intensidad moderada-severa.',
        diagnostico:'Depresión mayor, primer episodio.',
        objetivo:'Remisión del episodio depresivo. Activación conductual. Prevención de recaídas.',
-       plan:'Activación conductual, registro de pensamientos, intervención en red social, higiene del sueño.'},
+       plan:'Activación conductual, registro de pensamientos, intervención en red social, higiene del sueño.',
+       tareas:'Activación conductual: una actividad placentera por día. Higiene del sueño (horario fijo). Registro de logros diarios.',
+       tareasList:['registro_actividades','higiene_sueno','ejercicios_gratitud']},
       {id:TR[3],pacId:PA[3],psId:PS_CMEND,tipo:'Terapia Breve Centrada en Soluciones',sesiones:12,
        obs:'Burnout laboral con afectación familiar. Dificultad para establecer límites.',
        hipotesis:'Síndrome de burnout con componente de dificultad en establecimiento de límites.',
        diagnostico:'Burnout laboral (CIE-11 QD85).',
        objetivo:'Establecer límites laborales saludables. Recuperar balance vida-trabajo.',
-       plan:'Técnicas de manejo del estrés, entrenamiento en asertividad, reestructuración de prioridades.'},
+       plan:'Técnicas de manejo del estrés, entrenamiento en asertividad, reestructuración de prioridades.',
+       tareas:'Salir del trabajo a la hora acordada. Pausas activas cada 2 horas. Tiempo de calidad con familia.',
+       tareasList:['registro_actividades','ejercicios_respiracion']},
       {id:TR[4],pacId:PA[4],psId:PS_CMEND,tipo:'Cognitivo-Conductual',sesiones:16,
        obs:'Ansiedad social severa con evitación de exposición pública.',
        hipotesis:'Trastorno de ansiedad social (fobia social).',
        diagnostico:'Fobia social, forma generalizada.',
        objetivo:'Reducir ansiedad en situaciones sociales. Ampliar repertorio de interacciones.',
-       plan:'Exposición gradual, entrenamiento en habilidades sociales, desafío de creencias catastróficas.'},
+       plan:'Exposición gradual, entrenamiento en habilidades sociales, desafío de creencias catastróficas.',
+       tareas:'Iniciar una conversación breve por día. Registrar situaciones sociales y nivel de ansiedad.',
+       tareasList:['registro_actividades','ejercicios_respiracion']},
       {id:TR[5],pacId:PA[5],psId:PS_AFLOR,tipo:'Terapia de Duelo y Trauma',sesiones:20,
        obs:'Trauma por divorcio, separación de hijos, inicio de consumo de alcohol como evitación.',
        hipotesis:'Trastorno adaptativo con estado de ánimo depresivo y conductas de evitación.',
        diagnostico:'Trastorno adaptativo post-divorcio con componente de duelo.',
        objetivo:'Elaborar duelo de la relación. Establecer nueva identidad. Eliminar consumo de alcohol.',
-       plan:'Terapia de duelo, técnicas narrativas, psicoeducación sobre alcohol como evitación, red de apoyo.'},
+       plan:'Terapia de duelo, técnicas narrativas, psicoeducación sobre alcohol como evitación, red de apoyo.',
+       tareas:'Diario narrativo del duelo. Actividades significativas con hijos. No consumo de alcohol (registro de días).',
+       tareasList:['registro_actividades','ejercicios_gratitud','Diario emocional']},
       {id:TR[6],pacId:PA[6],psId:PS_AFLOR,tipo:'Terapia de Duelo',sesiones:16,
        obs:'Duelo por fallecimiento de madre hace 2 meses. Primera consulta psicológica.',
        hipotesis:'Duelo normal en etapa de elaboración activa.',
        diagnostico:'Duelo por pérdida de figura materna.',
        objetivo:'Acompañar proceso de elaboración del duelo. Prevenir complicaciones.',
-       plan:'Trabajo narrativo del duelo, rituales simbólicos, integración de la pérdida, red de apoyo familiar.'},
+       plan:'Trabajo narrativo del duelo, rituales simbólicos, integración de la pérdida, red de apoyo familiar.',
+       tareas:'Escribir una carta a su madre. Preparar una receta favorita de ella como ritual. Contacto regular con hermana.',
+       tareasList:['registro_actividades','ejercicios_gratitud','Diario emocional']},
       {id:TR[7],pacId:PA[7],psId:PS_AFLOR,tipo:'Terapia Sistémica Familiar',sesiones:12,
        obs:'Conflicto familiar crónico con hijo adulto. Estrés de pareja secundario.',
        hipotesis:'Disfunción familiar con patrones de comunicación inadecuados.',
        diagnostico:'Problemática relacional familiar.',
        objetivo:'Mejorar comunicación familiar. Establecer límites. Fortalecer vínculo de pareja.',
-       plan:'Mapeo de patrones relacionales, entrenamiento en comunicación asertiva, trabajo en límites.'},
+       plan:'Mapeo de patrones relacionales, entrenamiento en comunicación asertiva, trabajo en límites.',
+       tareas:'Comunicar límites de forma asertiva. Tiempo de pareja semanal. Registro de interacciones con hijo.',
+       tareasList:['registro_actividades']},
       {id:TR[8],pacId:PA[8],psId:PS_RVARG,tipo:'Cognitivo-Conductual (ERP)',sesiones:20,
        obs:'TOC leve con rituales de comprobación que afectan funcionamiento diario.',
        hipotesis:'Trastorno obsesivo-compulsivo de intensidad leve-moderada.',
        diagnostico:'TOC con rituales de comprobación.',
        objetivo:'Reducir rituales compulsivos. Aumentar tolerancia a la incertidumbre.',
-       plan:'Psicoeducación sobre TOC, exposición con prevención de respuesta (ERP), reestructuración cognitiva.'},
+       plan:'Psicoeducación sobre TOC, exposición con prevención de respuesta (ERP), reestructuración cognitiva.',
+       tareas:'Exposición diaria reduciendo revisiones (meta: máximo 1 vez). Técnica STOP ante pensamiento intruso.',
+       tareasList:['ejercicios_respiracion','registro_actividades']},
       {id:TR[9],pacId:PA[9],psId:PS_RVARG,tipo:'Cognitivo-Conductual',sesiones:24,
        obs:'Restricción alimentaria con distorsión de imagen corporal. Perfeccionismo elevado.',
        hipotesis:'Trastorno de la conducta alimentaria no especificado con componente de distorsión de imagen.',
        diagnostico:'TCA-NE con restricción y distorsión de imagen corporal.',
        objetivo:'Normalizar conducta alimentaria. Mejorar imagen corporal. Reducir perfeccionismo.',
-       plan:'Psicoeducación nutricional, diario alimentario, trabajo en imagen corporal, reestructuración cognitiva.'},
+       plan:'Psicoeducación nutricional, diario alimentario, trabajo en imagen corporal, reestructuración cognitiva.',
+       tareas:'Diario alimentario diario (3 comidas). Ejercicio de mindfulness tras cada comida. Autocompasión ante errores.',
+       tareasList:['registro_actividades','ejercicios_respiracion','Diario emocional']},
       {id:TR[10],pacId:PA[10],psId:PS_RVARG,tipo:'Cognitivo-Conductual',sesiones:16,
        obs:'Trastorno de pánico con evitación de conducción. Impacto funcional significativo.',
        hipotesis:'Trastorno de pánico con agorafobia situacional.',
        diagnostico:'Trastorno de pánico con evitación fóbica.',
        objetivo:'Eliminar ataques de pánico. Recuperar conducción autónoma.',
-       plan:'Psicoeducación, técnicas de respiración y relajación, exposición interoceptiva, exposición in vivo gradual.'},
+       plan:'Psicoeducación, técnicas de respiración y relajación, exposición interoceptiva, exposición in vivo gradual.',
+       tareas:'Respiración 4-7-8 antes de manejar. Exposición gradual de conducción (distancias crecientes). Registro de viajes.',
+       tareasList:['ejercicios_respiracion','registro_actividades']},
       {id:TR[11],pacId:PA[11],psId:PS_RVARG,tipo:'Cognitivo-Conductual',sesiones:20,
        obs:'Baja autoestima crónica con patrones relacionales dependientes.',
        hipotesis:'Trastorno de personalidad por dependencia rasgos. Baja autoestima crónica.',
        diagnostico:'Problemas relacionales crónicos con baja autoestima.',
        objetivo:'Fortalecer autoestima. Identificar y cambiar patrones relacionales disfuncionales.',
-       plan:'Trabajo en esquemas de vida, entrenamiento en asertividad, trabajo en límites, actividades de autocuidado.'},
+       plan:'Trabajo en esquemas de vida, entrenamiento en asertividad, trabajo en límites, actividades de autocuidado.',
+       tareas:'Una actividad de autocuidado por día. Practicar decir "no" en situaciones de bajo riesgo. Registro de necesidades propias.',
+       tareasList:['registro_actividades','ejercicios_gratitud','Diario emocional']},
       {id:TR[12],pacId:PA[12],psId:PS_MQUISP,tipo:'Entrevista Motivacional + TCC',sesiones:24,
        obs:'Dependencia alcohólica con historial de recaídas. Alta ambivalencia inicial al cambio.',
        hipotesis:'Dependencia alcohólica severa con patrón de recaída-recuperación.',
        diagnostico:'Dependencia al alcohol (CIE-11 6C40.2).',
        objetivo:'Alcanzar y mantener sobriedad. Construir red de apoyo. Prevenir recaídas.',
-       plan:'Entrevista motivacional, psicoeducación sobre adicción, plan de prevención de recaídas, trabajo con familia.'},
+       plan:'Entrevista motivacional, psicoeducación sobre adicción, plan de prevención de recaídas, trabajo con familia.',
+       tareas:'Asistir a reuniones de AA (mínimo 3 por semana). Llamar al sponsor ante cravings. Ejercicio físico diario.',
+       tareasList:['registro_actividades']},
       {id:TR[13],pacId:PA[13],psId:PS_MQUISP,tipo:'Entrevista Motivacional + TCC',sesiones:20,
        obs:'Dependencia a cannabis en estadio temprano de recuperación. Presión social significativa.',
        hipotesis:'Uso nocivo de cannabis con riesgo de dependencia.',
        diagnostico:'Uso perjudicial de cannabis (CIE-11 6C41.1).',
        objetivo:'Mantener abstinencia. Construir red social libre de consumo. Gestión del estrés sin sustancias.',
-       plan:'Entrevista motivacional, técnicas HALT, reconstrucción red social, manejo del estrés alternativo.'},
+       plan:'Entrevista motivacional, técnicas HALT, reconstrucción red social, manejo del estrés alternativo.',
+       tareas:'Técnica HALT ante impulso de consumo. Actividades sociales libres de sustancias. Registro de días de abstinencia.',
+       tareasList:['registro_actividades','ejercicios_respiracion']},
       {id:TR[14],pacId:PA[14],psId:PS_JTORR,tipo:'TCC adaptada a adolescentes',sesiones:16,
        obs:'Depresión reactiva a bullying escolar persistente. Isolamiento social.',
        hipotesis:'Trastorno adaptativo con humor depresivo reactivo a bullying.',
        diagnostico:'Depresión reactiva en adolescente víctima de bullying.',
        objetivo:'Reducir síntomas depresivos. Construir red de apoyo escolar. Fortalecer autoestima.',
-       plan:'Intervención en contexto escolar, entrenamiento en habilidades sociales, activación conductual, trabajo en autoestima.'},
+       plan:'Intervención en contexto escolar, entrenamiento en habilidades sociales, activación conductual, trabajo en autoestima.',
+       tareas:'Actividad social con compañero de confianza. Registro de cosas positivas del día. Activación conductual: actividad creativa.',
+       tareasList:['registro_actividades','ejercicios_gratitud']},
       {id:TR[15],pacId:PA[15],psId:PS_JTORR,tipo:'TCC adaptada a adolescentes',sesiones:12,
        obs:'Ansiedad de evaluación con afectación del sueño y rendimiento.',
        hipotesis:'Ansiedad de rendimiento académico en adolescente con tendencia al perfeccionismo.',
        diagnostico:'Ansiedad de evaluación con componente perfeccionista.',
        objetivo:'Reducir ansiedad de evaluación. Mejorar tolerancia al error. Técnicas de relajación.',
-       plan:'Psicoeducación sobre ansiedad, técnicas de respiración, reestructuración cognitiva, exposición gradual a evaluaciones.'},
+       plan:'Psicoeducación sobre ansiedad, técnicas de respiración, reestructuración cognitiva, exposición gradual a evaluaciones.',
+       tareas:'Respiración 4-7-8 antes de exámenes. Exposición gradual a situaciones de evaluación. Registro de pensamientos catastróficos.',
+       tareasList:['ejercicios_respiracion','registro_actividades']},
       {id:TR[16],pacId:PA[16],psId:PS_JTORR,tipo:'Terapia de Aceptación y Compromiso (ACT)',sesiones:16,
        obs:'Crisis de identidad vocacional post abandono universitario. Baja motivación.',
        hipotesis:'Trastorno adaptativo con exploración de identidad en adulto joven.',
        diagnostico:'Trastorno de ajuste con humor depresivo.',
        objetivo:'Clarificar valores y metas. Reducir comparación social. Desarrollar plan de vida.',
-       plan:'Clarificación de valores, defusión cognitiva, activación comprometida, exploración vocacional.'},
+       plan:'Clarificación de valores, defusión cognitiva, activación comprometida, exploración vocacional.',
+       tareas:'Ejercicio de clarificación de valores. Actividad relacionada con interés vocacional (diseño gráfico). Diario de progreso.',
+       tareasList:['registro_actividades','ejercicios_gratitud','Diario emocional']},
     ];
 
     for (const t of tratamientos) {
@@ -1120,13 +1730,16 @@ async function main() {
           (id, "pacienteId", "psicologoId", tipo_intervencion, numero_sesiones_tentativas,
            observaciones_clinicas_encrypted, hipotesis_diagnostica_encrypted,
            diagnostico_clinico_encrypted, objetivo_general_encrypted, plan_trabajo_encrypted,
-           consumo_sustancias, fecha_inicio, activo)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,'2026-03-01',true)
+           consumo_sustancias, tareas_terapeuticas, tareas_terapeuticas_list,
+           fecha_inicio, activo)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,'2026-03-01',true)
       `, [
         t.id, t.pacId, t.psId, t.tipo, t.sesiones,
         enc(t.obs), enc(t.hipotesis), enc(t.diagnostico),
         enc(t.objetivo), enc(t.plan),
         [PA[5],PA[12]].includes(t.pacId),
+        t.tareas,
+        JSON.stringify(t.tareasList),
       ]);
     }
 
@@ -1267,6 +1880,27 @@ async function main() {
       [PA[14],'ejercicios_gratitud','2026-03-25',['Cosas positivas del día con Rodrigo','Logros sociales de la semana'],3,600],
       [PA[15],'ejercicios_respiracion','2026-03-11',['Respiración pre-examen','Técnica de calma en el aula'],3,900],
       [PA[15],'ejercicios_respiracion','2026-03-25',['Respiración antes de examen de Ciencias','Visualización positiva'],5,900],
+      // PA[5] Diego Morales – irregular al inicio, más constante al final
+      [PA[5],'registro_actividades','2026-03-18',['Caminata nocturna 40 min','Llamada al hermano ante craving'],2,2400],
+      [PA[5],'registro_actividades','2026-03-25',['Tiempo de calidad con hijos (LEGO)','Cena en familia'],3,0],
+      [PA[5],'registro_actividades','2026-03-29',['Película con compañero del trabajo'],1,0],
+      [PA[5],'ejercicios_gratitud','2026-04-01',['Videollamada con hijos','Conversación cordial con ex'],2,0],
+      // PA[6] Patricia Vásquez – constancia moderada, coherente con mejora lenta
+      [PA[6],'registro_actividades','2026-03-11',['Visita a tumba con hermana','Compartir recuerdos'],2,0],
+      [PA[6],'registro_actividades','2026-03-18',['Cocinar receta de mamá','Caminata matutina'],2,1800],
+      [PA[6],'ejercicios_gratitud','2026-03-25',['Llamada a amiga de mamá','Foto de mamá en el trabajo'],2,0],
+      [PA[6],'registro_actividades','2026-04-01',['Sopa de maní para sobrinos','Segunda semana en el trabajo'],2,0],
+      // PA[9] Lucía Méndez – registros con altibajos, refleja patrón mixto
+      [PA[9],'ejercicios_respiracion','2026-03-11',['Mindfulness post-cena','Respiración al sentir culpa'],3,900],
+      [PA[9],'registro_actividades','2026-03-18',['Almuerzo completo (logro)','Desayuno con huevos y tostadas'],2,0],
+      [PA[9],'ejercicios_respiracion','2026-03-25',['Mindfulness post-almuerzo','Técnica STOP ante pensamiento restrictivo'],4,1200],
+      [PA[9],'registro_actividades','2026-04-01',['Almuerzo libre sin calcular','Guardar báscula en el armario'],2,0],
+      // PA[11] Isabel Romero – mejora sostenida, registros frecuentes
+      [PA[11],'registro_actividades','2026-03-11',['Lista de gustos propios','Retomar lectura por placer'],2,0],
+      [PA[11],'registro_actividades','2026-03-18',['Decir no sin culpa','Tarde del sábado sola (mercado, café, parque)'],3,3600],
+      [PA[11],'ejercicios_gratitud','2026-03-25',['Cine sola','Nota de lo que me gusta de mí misma'],2,0],
+      [PA[11],'registro_actividades','2026-04-01',['Tarde con tres amigas','Cocinar lo que yo quiero'],3,0],
+      [PA[11],'ejercicios_gratitud','2026-04-05',['Decirle a alguien lo que trabajo en terapia','Sentirme bien sin validación'],2,0],
     ];
 
     for (const [pacId, tipo, fecha, actividades, veces, tiempo] of tareaData) {
@@ -1284,18 +1918,37 @@ async function main() {
     await qr.commitTransaction();
     console.log("\n✅ Seed completado exitosamente!\n");
 
-    console.log("═══════════════════════════════════════════");
-    console.log("  CREDENCIALES DE ACCESO");
-    console.log("═══════════════════════════════════════════");
+    console.log("═══════════════════════════════════════════════════════");
+    console.log("  CREDENCIALES — STAFF");
+    console.log("═══════════════════════════════════════════════════════");
     console.log("  Usuario          │ Contraseña");
-    console.log("  ─────────────────┼─────────────────────");
+    console.log("  ─────────────────┼───────────────────────────────────");
     console.log("  admin            │ Admin@2024!         (rol: admin)");
     console.log("  cmendoza         │ Mendoza@2024!       (Dr. Carlos Mendoza — 4 pacientes)");
     console.log("  aflores          │ Flores@2024!        (Dra. Ana Flores — 3 pacientes)");
     console.log("  rvargas          │ Vargas@2024!        (Dr. Roberto Vargas — 4 pacientes)");
     console.log("  mquispe          │ Quispe@2024!        (Dra. María Quispe — 2 pacientes)");
     console.log("  jtorres          │ Torres@2024!        (Dr. Javier Torres — 3 pacientes)");
-    console.log("═══════════════════════════════════════════\n");
+    console.log("═══════════════════════════════════════════════════════");
+    console.log("  CREDENCIALES — PACIENTES  (todos: Paciente@2024!)");
+    console.log("═══════════════════════════════════════════════════════");
+    console.log("  lrodriguez  │ Luis Rodríguez       (PA[1]  — Ansiedad generalizada)");
+    console.log("  vcardenas   │ Valentina Cárdenas   (PA[2]  — Depresión mayor)");
+    console.log("  mherrera    │ Marco Herrera         (PA[3]  — Burnout laboral)");
+    console.log("  saguilar    │ Sofía Aguilar         (PA[4]  — Ansiedad social)");
+    console.log("  dmorales    │ Diego Morales         (PA[5]  — Post-divorcio)");
+    console.log("  pvasquez    │ Patricia Vásquez      (PA[6]  — Duelo materno)");
+    console.log("  cdelgado    │ Carmen Delgado        (PA[7]  — Conflicto familiar)");
+    console.log("  acastro     │ Andrés Castro         (PA[8]  — TOC leve)");
+    console.log("  lmendez     │ Lucía Méndez          (PA[9]  — Imagen corporal)");
+    console.log("  fortega     │ Felipe Ortega         (PA[10] — Trastorno de pánico)");
+    console.log("  iromero     │ Isabel Romero         (PA[11] — Autoestima/relaciones)");
+    console.log("  rpaz        │ Rodrigo Paz           (PA[12] — Dependencia alcohólica)");
+    console.log("  nflores     │ Natalia Flores        (PA[13] — Recuperación sustancias)");
+    console.log("  kmamani     │ Kevin Mamani          (PA[14] — Depresión/bullying)");
+    console.log("  dchavez     │ Daniela Chávez        (PA[15] — Ansiedad escolar)");
+    console.log("  tgutierrez  │ Tomás Gutiérrez       (PA[16] — Trastorno de ajuste)");
+    console.log("═══════════════════════════════════════════════════════\n");
 
   } catch (err) {
     await qr.rollbackTransaction();

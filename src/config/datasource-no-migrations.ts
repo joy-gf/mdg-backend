@@ -25,8 +25,10 @@ export const AppDataSourceNoMigrations = new DataSource({
     rejectUnauthorized: false
   },
   synchronize: false,
-  logging: false,
+  logging: ["error"],
   migrationsRun: false,
+  maxQueryExecutionTime: 0,
+  poolSize: 5,
   entities: [
     Consultorio,
     Paciente,

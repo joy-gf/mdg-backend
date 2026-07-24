@@ -17,7 +17,7 @@ import "reflect-metadata";
 import "dotenv/config";
 import { randomUUID } from "crypto";
 import * as bcrypt from "bcrypt";
-import { AppDataSourceNoMigrationsNoMigrations } from "../config/datasource-no-migrations";
+import { AppDataSourceNoMigrations } from "../config/datasource-no-migrations";
 import { encryptText, deriveKey } from "../utils/crypto.util";
 
 const ENC_KEY = deriveKey(
@@ -624,15 +624,15 @@ async function main() {
 
           const esFutura = fecha > TODAY;
           const citaEstado = esFutura ? "activa" : "finalizada";
+          const fechaConfirmacion = citaEstado === "finalizada" ? new Date() : null;
 
           await qr.query(
             `INSERT INTO citas
-               (id, "pacienteId", "psicologoId", "consultorioId",
+              (id, "pacienteId", "psicologoId", "consultorioId",
                 fecha_sesion, hora_sesion, duracion_minutos, tipo_cita,
                 estado, solicitada_por, fecha_confirmacion)
-             VALUES ($1,$2,$3,$4,$5,$6,60,'Presencial',$7,'psicologo',
-                     CASE WHEN $7='finalizada' THEN now() ELSE NULL END)`,
-            [randomUUID(), pac.id, psicoId, slot.consId, fecha, slot.hora, citaEstado]
+            VALUES ($1,$2,$3,$4,$5,$6,60,'Presencial',$7,'psicologo',$8)`,
+            [randomUUID(), pac.id, psicoId, slot.consId, fecha, slot.hora, citaEstado, fechaConfirmacion]
           );
           citaCount++;
 
