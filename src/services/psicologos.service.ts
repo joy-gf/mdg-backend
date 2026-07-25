@@ -110,7 +110,7 @@ export class PsicologosService {
 
   static async addUserToPsicologo(psicologoId: string, userData: UsuarioInput) {
     return await AppDataSource.transaction(async (manager) => {
-      const role_id = "8c85856d-137a-4df9-9e96-2b2ff3cebd14"; // PSICOLOGO role
+      const role_id = "aaaa0001-aa00-aa00-aa00-000000000002"; // PSICOLOGO role
       const { userName, password } = userData;
 
       // Verificar que el psicólogo existe
@@ -193,7 +193,7 @@ export class PsicologosService {
     await this.validateCIUnique(data.psicologo.ci);
 
     return await AppDataSource.transaction(async (manager) => {
-      const role_id = "8c85856d-137a-4df9-9e96-2b2ff3cebd14";
+      const role_id = "aaaa0001-aa00-aa00-aa00-000000000002";
       const { userName, password, roleId } = data.usuario;
 
       // Verificar que el username no existe

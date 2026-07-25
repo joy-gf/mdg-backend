@@ -106,7 +106,7 @@ export class PacientesService {
 
   static async addUserToPaciente(pacienteId: string, userData: UsuarioInput) {
     return await AppDataSource.transaction(async (manager) => {
-      const role_id = "222b5b78-a1b4-41d7-8ed0-f904afb3f078"; // PACIENTE role
+      const role_id = "aaaa0001-aa00-aa00-aa00-000000000003"; // PACIENTE role
       const { userName, password } = userData;
 
       // Verificar que el paciente existe
@@ -180,7 +180,7 @@ export class PacientesService {
     await this.validateCIUnique(data.paciente.ci);
 
     return await AppDataSource.transaction(async (manager) => {
-      const role_id = "222b5b78-a1b4-41d7-8ed0-f904afb3f078";
+      const role_id = "aaaa0001-aa00-aa00-aa00-000000000003";
       const { userName, password, roleId } = data.usuario;
 
       // Verificar que el username no existe
