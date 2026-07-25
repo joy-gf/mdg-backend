@@ -17,7 +17,7 @@ import "reflect-metadata";
 import "dotenv/config";
 import { randomUUID } from "crypto";
 import * as bcrypt from "bcrypt";
-import { AppDataSource } from "../config/datasource";
+import { AppDataSourceNoMigrations } from "../config/datasource-no-migrations";
 import { encryptText, deriveKey } from "../utils/crypto.util";
 
 const ENC_KEY = deriveKey(
@@ -410,8 +410,8 @@ const NEW_PATIENTS: NewPatientDef[] = [
 // MAIN
 // ══════════════════════════════════════════════════════════
 async function main() {
-  await AppDataSource.initialize();
-  const qr = AppDataSource.createQueryRunner();
+  await AppDataSourceNoMigrations.initialize();
+  const qr = AppDataSourceNoMigrations.createQueryRunner();
   await qr.connect();
 
   try {
@@ -624,15 +624,15 @@ async function main() {
 
           const esFutura = fecha > TODAY;
           const citaEstado = esFutura ? "activa" : "finalizada";
+          const fechaConfirmacion = citaEstado === "finalizada" ? new Date() : null;
 
           await qr.query(
             `INSERT INTO citas
-               (id, "pacienteId", "psicologoId", "consultorioId",
+              (id, "pacienteId", "psicologoId", "consultorioId",
                 fecha_sesion, hora_sesion, duracion_minutos, tipo_cita,
                 estado, solicitada_por, fecha_confirmacion)
-             VALUES ($1,$2,$3,$4,$5,$6,60,'Presencial',$7,'psicologo',
-                     CASE WHEN $7='finalizada' THEN now() ELSE NULL END)`,
-            [randomUUID(), pac.id, psicoId, slot.consId, fecha, slot.hora, citaEstado]
+            VALUES ($1,$2,$3,$4,$5,$6,60,'Presencial',$7,'psicologo',$8)`,
+            [randomUUID(), pac.id, psicoId, slot.consId, fecha, slot.hora, citaEstado, fechaConfirmacion]
           );
           citaCount++;
 
@@ -715,7 +715,8 @@ async function main() {
             await qr.query(
               `INSERT INTO registro_tareas_terapeuticas
                  (id, paciente_id, tipo_tarea, fecha, actividades_realizadas, veces_completado, tiempo_total_segundos, created_at, updated_at)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$8)`,
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$8)
+               ON CONFLICT (paciente_id, tipo_tarea, fecha) DO NOTHING`,
               [randomUUID(), pac.id, tipo, t, tpl.actividades.join(","), tpl.veces, tpl.tiempo, `${t}T21:00:00`]
             );
             tareaCount++;
@@ -748,7 +749,7 @@ async function main() {
     throw err;
   } finally {
     await qr.release();
-    await AppDataSource.destroy();
+    await AppDataSourceNoMigrations.destroy();
   }
 }
 

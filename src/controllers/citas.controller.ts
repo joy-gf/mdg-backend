@@ -176,4 +176,30 @@ export class CitasController {
       });
     }
   }
+
+  static async delete(req: Request, res: Response) {
+    try {
+      const data = await CitasService.delete(req.params.id);
+      res.json(data);
+    } catch (error: any) {
+      if (error.message === "Cita no encontrada") {
+        return res.status(404).json({
+          error: "NOT_FOUND",
+          message: error.message,
+        });
+      }
+
+      if (error.message?.includes("no pueden ser eliminadas") || error.message?.includes("no puede ser eliminada") || error.message?.includes("finalizadas") || error.message?.includes("pasadas")) {
+        return res.status(409).json({
+          error: "CONFLICT",
+          message: error.message,
+        });
+      }
+
+      res.status(500).json({
+        error: "INTERNAL_ERROR",
+        message: "Error al eliminar la cita",
+      });
+    }
+  }
 }
