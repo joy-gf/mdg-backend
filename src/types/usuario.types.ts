@@ -9,7 +9,7 @@ export interface Usuario {
 export interface UsuarioInput {
   userName?: string;
   password?: string;
-  roleId?: string;
+  roleId?: string | number;
   foto_perfil?: string | null;
   debeCambiarPassword?: boolean;
 }

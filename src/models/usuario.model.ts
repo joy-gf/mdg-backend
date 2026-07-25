@@ -34,7 +34,7 @@ export class UsuarioModel {
   }
 
   static async update(id: string, data: Partial<UsuarioInput>): Promise<Usuario> {
-    const { userName, password, roleId, foto_perfil, debeCambiarPassword } = data;
+    let { userName, password, roleId, foto_perfil, debeCambiarPassword } = data;
 
     // Build dynamic UPDATE query based on provided fields
     const updates: string[] = [];
@@ -59,6 +59,12 @@ export class UsuarioModel {
     }
 
     if (roleId !== undefined) {
+      if (roleId === 1 || roleId === 2) {
+        console.log("Mapping roleId from code to UUID:", roleId); // Debugging line
+        roleId = await this.getRoleIdByCode(roleId);
+      }
+      
+      console.log("Role ID after mapping:", roleId); // Debugging line
       updates.push(`role_id = $${paramIndex}`);
       values.push(roleId);
       paramIndex++;
@@ -99,5 +105,10 @@ export class UsuarioModel {
 
   static async delete(id: string): Promise<void> {
     await pool.query("DELETE FROM usuarios WHERE id = $1", [id]);
+  }
+
+  static async getRoleIdByCode(code: number): Promise<string | undefined> {
+    if (code === 1) return "aaaa0001-aa00-aa00-aa00-000000000001"; // ADMIN
+    if (code === 2) return "aaaa0001-aa00-aa00-aa00-000000000002";
   }
 }
