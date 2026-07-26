@@ -18,21 +18,45 @@ export class EstadisticasService {
     try {
       const fechaLimite = new Date();
       fechaLimite.setDate(fechaLimite.getDate() - periodoDias);
-      const fechaLimiteStr = fechaLimite.toISOString().split('T')[0];
+      const fechaLimiteStr = fechaLimite.toISOString().split("T")[0];
 
       const query = `
         SELECT
           p.id,
           p.nombres,
           p.apellidos,
-          COUNT(DISTINCT CASE WHEN t.activo = true THEN t."pacienteId" END)::integer AS pacientes_activos,
-          COUNT(DISTINCT CASE WHEN s.fecha_sesion >= $1 THEN s.id END)::integer AS total_sesiones
+
+          COUNT(DISTINCT CASE
+            WHEN pa.activo = true
+            AND s.id IS NOT NULL
+            THEN pa.id
+          END)::integer AS pacientes_activos,
+
+          COUNT(s.id)::integer AS total_sesiones
+
         FROM psicologos p
-        LEFT JOIN historial_tratamiento t ON t."psicologoId" = p.id
-        LEFT JOIN historial_sesion s ON s."tratamientoId" = t.id
+
+        LEFT JOIN historial_tratamiento t
+          ON t."psicologoId" = p.id
+
+        LEFT JOIN pacientes pa
+          ON pa.id = t."pacienteId"
+
+        LEFT JOIN historial_sesion s
+          ON s."tratamientoId" = t.id
+        AND s.fecha_sesion BETWEEN $1 AND CURRENT_DATE
+        AND s.finalizada = true
+
         WHERE p.activo = true
-        GROUP BY p.id, p.nombres, p.apellidos
-        ORDER BY p.apellidos ASC, p.nombres ASC
+
+        GROUP BY
+          p.id,
+          p.nombres,
+          p.apellidos
+
+        ORDER BY
+          p.apellidos ASC,
+          p.nombres ASC;
       `;
 
       const estadisticas = await AppDataSource.query(query, [fechaLimiteStr]);
@@ -41,8 +65,8 @@ export class EstadisticasService {
         id: est.id,
         nombres: est.nombres,
         apellidos: est.apellidos,
-        pacientes_activos: est.pacientes_activos || 0,
-        total_sesiones: est.total_sesiones || 0,
+        pacientes_activos: Number(est.pacientes_activos) || 0,
+        total_sesiones: Number(est.total_sesiones) || 0,
       }));
     } catch (error) {
       console.error("Error al obtener estadísticas de psicólogos:", error);
@@ -74,14 +98,43 @@ export class EstadisticasService {
          WHERE fecha_sesion >= NOW() - INTERVAL '30 days'`
       ),
       AppDataSource.query(
-        `SELECT p.nombres || ' ' || p.apellidos AS nombre,
-                COUNT(pac.id)::integer AS pacientes_activos
-         FROM psicologos p
-         JOIN pacientes pac ON pac.psicologo_id = p.id AND pac.activo = true
-         WHERE p.activo = true
-         GROUP BY p.id, p.nombres, p.apellidos
-         ORDER BY pacientes_activos DESC
-         LIMIT 1`
+        `SELECT
+            p.id,
+            p.nombres || ' ' || p.apellidos AS nombre,
+
+            COUNT(DISTINCT CASE
+              WHEN pa.activo = true
+              AND s.id IS NOT NULL
+              THEN pa.id
+            END)::integer AS pacientes_activos,
+
+            COUNT(s.id)::integer AS total_sesiones
+
+          FROM psicologos p
+
+          LEFT JOIN historial_tratamiento t
+            ON t."psicologoId" = p.id
+
+          LEFT JOIN pacientes pa
+            ON pa.id = t."pacienteId"
+
+          LEFT JOIN historial_sesion s
+            ON s."tratamientoId" = t.id
+          AND s.finalizada = true
+          AND s.fecha_sesion >= CURRENT_DATE - INTERVAL '30 days'
+
+          WHERE p.activo = true
+
+          GROUP BY
+            p.id,
+            p.nombres,
+            p.apellidos
+
+          ORDER BY
+            pacientes_activos DESC,
+            total_sesiones DESC
+
+          LIMIT 1`
       ),
     ]);
 
