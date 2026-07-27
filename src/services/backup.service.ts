@@ -58,6 +58,10 @@ export async function generateBackup(): Promise<{ filepath: string; filename: st
   // Eliminar el SQL sin encriptar
   fs.unlinkSync(sqlFilepath);
 
+  console.log("BACKUP_DIR:", BACKUP_DIR);
+  console.log("Archivo generado:", encFilepath);
+  console.log("Existe:", fs.existsSync(encFilepath));
+  console.log("Contenido:", fs.readdirSync(BACKUP_DIR));
   // Limpiar backups de más de 30 días
   cleanOldBackups(30);
 
@@ -66,6 +70,10 @@ export async function generateBackup(): Promise<{ filepath: string; filename: st
 
 export function listBackups(): { filename: string; sizeKB: number; createdAt: Date }[] {
   ensureBackupDir();
+  console.log("BACKUP_DIR:", BACKUP_DIR);
+  console.log("Existe directorio:", fs.existsSync(BACKUP_DIR));
+  console.log("Archivos:", fs.readdirSync(BACKUP_DIR));
+
   return fs
     .readdirSync(BACKUP_DIR)
     .filter((f) => f.endsWith(".enc"))

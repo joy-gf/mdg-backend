@@ -250,8 +250,8 @@ export class PushSubscriptionService {
 }
 
 export function scheduleReminders(): void {
-  // Corre cada 5 minutos; ventana de ±3 min alrededor de cada marca de tiempo
-  cron.schedule("*/5 * * * *", async () => {
+  // Corre cada 2 minutos; ventana de ±3 min alrededor de cada marca de tiempo
+  cron.schedule("*/2 * * * *", async () => {
     try {
       const [r30m, r1h, r24h] = await Promise.all([
         PushSubscriptionService.sendRemindersByWindow(
@@ -280,5 +280,5 @@ export function scheduleReminders(): void {
     }
   });
 
-  console.log("[Push] Recordatorios automáticos programados (cada 5 min)");
+  console.log("[Push] Recordatorios automáticos programados (cada 2 min)");
 }
